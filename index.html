@@ -187,7 +187,7 @@ document.addEventListener("click",function(e){var g=function(s){return e.target.
  else if(g("#tb")||g("#th")){var r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark";st("theme",r.dataset.theme);render()}
 });
 var sl=st("lang");if(sl&&T[sl])L=sl;var sh=st("theme");if(sh)document.documentElement.dataset.theme=sh;
-render();async function refreshBtc(){
+render(;async function refreshBtc(){
   try{
     var r=await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT");
     if(!r.ok) throw new Error("API error");
