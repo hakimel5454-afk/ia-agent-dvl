@@ -187,7 +187,30 @@ document.addEventListener("click",function(e){var g=function(s){return e.target.
  else if(g("#tb")||g("#th")){var r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark";st("theme",r.dataset.theme);render()}
 });
 var sl=st("lang");if(sl&&T[sl])L=sl;var sh=st("theme");if(sh)document.documentElement.dataset.theme=sh;
-render();
+render();async function refreshBtc(){
+  try{
+    var r=await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT");
+    if(!r.ok) throw new Error("API error");
+    var d=await r.json();
+    var price=Number(d.lastPrice);
+    var change=Number(d.priceChangePercent);
+
+    if(!Number.isFinite(price)||!Number.isFinite(change)) return;
+
+    document.querySelectorAll("#s-dash .big,#s-mkt .big").forEach(function(el){
+      el.textContent="$"+fm(price,0);
+    });
+
+    document.querySelectorAll("#s-dash .chg,#s-mkt .chg").forEach(function(el){
+      el.textContent=(change>=0?"▲ +":"▼ ")+change.toFixed(2)+"%";
+    });
+  }catch(e){
+    console.log("Bitcoin update unavailable",e);
+  }
+}
+
+refreshBtc();
+setInterval(refreshBtc,30000);
 </script>
 </body>
 </html>
