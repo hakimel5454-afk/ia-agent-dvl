@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>IA AGENT DVL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="IA DVL">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href='data:application/manifest+json,{"name":"IA AGENT DVL","short_name":"IA DVL","display":"standalone","background_color":"#ffffff","theme_color":"#000000","start_url":"."}'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--ink:#0a0a0a;--mut:#737373;--card:#fff;--bd:#e6e6e6;--ib:#0a0a0a;--it:#fff;--soft:#f4f4f4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--ink:#fafafa;--mut:#a3a3a3;--card:#0c0c0c;--bd:#242424;--ib:#fff;--it:#000;--soft:#161616;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--ink:#fafafa;--mut:#a3a3a3;--card:#0c0c0c;--bd:#242424;--ib:#fff;--it:#000;--soft:#161616;color-scheme:dark}
+*{-webkit-tap-highlight-color:transparent}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,"IBM Plex Sans Arabic","SF Arabic",-apple-system,sans-serif;font-size:15px;line-height:1.6;padding-bottom:92px;font-variant-numeric:tabular-nums;transition:background .3s,color .3s}
+html[lang=ar] body{font-family:"IBM Plex Sans Arabic","SF Arabic",Inter,-apple-system,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:34px;height:34px;border-radius:10px;background:var(--ib);color:var(--it);display:grid;place-items:center;font:800 11px Inter,sans-serif;letter-spacing:.5px;flex:none}
+.brand b{font:800 15px Inter,sans-serif;letter-spacing:1.5px;display:block;line-height:1.1}
+.brand small{color:var(--mut);font-size:11px}
+.ctl{display:flex;gap:6px;align-items:center}
+.seg{display:flex;border:1px solid var(--bd);border-radius:12px;padding:2px}
+.seg button{border:0;background:none;color:var(--mut);font:600 12px Inter,sans-serif;padding:5px 9px;border-radius:9px;transition:.25s}
+.seg button.on{background:var(--ib);color:var(--it)}
+.ib{border:1px solid var(--bd);background:none;color:var(--ink);width:34px;height:34px;border-radius:12px;display:grid;place-items:center;transition:.2s}
+button{font-family:inherit;transition:transform .15s,background .25s,color .25s,opacity .2s}
+button:active{transform:scale(.95)}
+main{padding:16px;max-width:640px;margin:auto}
+.sec{display:none}.sec.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:18px;margin-bottom:12px;opacity:0;animation:rise .55s cubic-bezier(.2,.8,.2,1) forwards}
+.sec.on .card:nth-child(2){animation-delay:.07s}.sec.on .card:nth-child(3){animation-delay:.14s}.sec.on .card:nth-child(4){animation-delay:.21s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.inv{background:var(--ib);color:var(--it);border-color:var(--ib)}
+.h{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.inv .h{color:inherit;opacity:.7}
+html[lang=ar] .h{letter-spacing:0;font-size:14px;text-transform:none}
+.i{width:20px;height:20px;flex:none}
+.demo{margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid currentColor;border-radius:20px;padding:2px 9px;opacity:.7}
+.demo::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.2}}
+.big{font:800 38px/1.1 Inter,sans-serif;letter-spacing:-.02em;direction:ltr;text-align:start}
+.chg{font:600 14px Inter,sans-serif;direction:ltr;display:inline-block;margin-top:4px}
+.mut{color:var(--mut);font-size:13px}
+.chart{width:100%;display:block;margin-top:12px;overflow:visible}
+.ln{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.3s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ar{fill:currentColor;opacity:.08}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.tile{position:relative;margin:0;padding:14px;text-align:start;cursor:pointer;color:var(--ink);font-size:inherit;display:block;width:100%}
+.tile .n{font:700 26px Inter,sans-serif;display:block;margin-top:2px}
+.tile .mut{display:flex;gap:6px;align-items:center}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd)}
+.row:last-child{border:0;padding-bottom:0}.row:first-of-type{padding-top:0}
+.av{width:38px;height:38px;border-radius:12px;background:var(--ib);color:var(--it);display:grid;place-items:center;font:700 13px Inter,sans-serif;flex:none}
+.grow{flex:1;min-width:0}
+.grow b{display:block;font-weight:600}
+.chip{font-size:11px;border:1px solid var(--bd);border-radius:20px;padding:1px 9px;color:var(--mut);margin-inline-end:6px}
+.spk{width:72px;flex:none}
+.rg{display:flex;gap:6px}
+.rg button{flex:1;border:1px solid var(--bd);background:none;color:var(--ink);border-radius:12px;padding:7px;font:600 12px Inter,sans-serif}
+.rg button.on{background:var(--ib);color:var(--it);border-color:var(--ib)}
+.odds{display:flex;gap:6px;margin-top:10px;direction:ltr}
+.odds div{flex:1;border:1px solid var(--bd);border-radius:12px;text-align:center;padding:6px 0;font:700 15px Inter,sans-serif}
+.odds div small{display:block;font:500 10px Inter,sans-serif;color:var(--mut)}
+.odds .top1{background:var(--ib);color:var(--it);border-color:var(--ib)}.odds .top1 small{color:inherit;opacity:.7}
+.bar{height:4px;border-radius:4px;background:var(--soft);margin-top:10px;overflow:hidden;direction:ltr}
+.bar i{display:block;height:100%;background:var(--ib);border-radius:4px;transform-origin:left;animation:grow 1s ease both}
+@keyframes grow{from{transform:scaleX(0)}}
+input{width:100%;box-sizing:border-box;padding:14px;border-radius:14px;border:1px solid var(--bd);background:var(--bg);color:var(--ink);font:600 18px Inter,sans-serif;direction:ltr;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--ink)}
+.btn{border:0;background:var(--ib);color:var(--it);font-weight:700;font-size:15px;border-radius:14px;padding:14px;margin-top:10px;width:100%}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--bd)}
+.sw{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--bd)}
+.sw:last-of-type{border:0}
+.sw button{width:46px;height:28px;border-radius:20px;border:1px solid var(--bd);background:var(--soft);position:relative;padding:0}
+.sw button::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:var(--mut);transition:inset-inline-start .25s,background .25s}
+.sw button[aria-checked=true]{background:var(--ib);border-color:var(--ib)}
+.sw button[aria-checked=true]::after{inset-inline-start:21px;background:var(--it)}
+.ring{width:44px;height:44px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:3.2}
+.ring .bg{stroke:var(--soft)}.ring .fg{stroke:currentColor;stroke-linecap:round;animation:ring 1.2s ease both}
+@keyframes ring{from{stroke-dasharray:0 100}}
+.rep p{margin:2px 0 0}.rep h3{margin:14px 0 0;font-size:14px;font-weight:700}
+.rep .row{display:block}
+nav{position:fixed;inset-inline:0;bottom:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--bd);z-index:9}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;min-width:70px;border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;padding:7px 8px;border-radius:14px}
+nav button.on{background:var(--ib);color:var(--it)}
+svg.coin{animation:flip 4s ease-in-out infinite}
+@keyframes flip{0%,55%{transform:rotateY(0)}85%,100%{transform:rotateY(360deg)}}
+.bell{transform-box:fill-box;transform-origin:50% 0;animation:ring2 3.2s ease-in-out infinite}
+@keyframes ring2{0%,60%,100%{transform:rotate(0)}66%{transform:rotate(14deg)}72%{transform:rotate(-12deg)}78%{transform:rotate(8deg)}84%{transform:rotate(-5deg)}90%{transform:rotate(0)}}
+.gl ellipse{transform-box:fill-box;transform-origin:center;animation:gl 5s ease-in-out infinite alternate}
+@keyframes gl{from{transform:scaleX(.25)}to{transform:scaleX(1)}}
+.hero{width:30px;height:30px}
+@media (prefers-reduced-motion:reduce){*,::before,::after{animation:none!important;transition:none!important}.card{opacity:1}.ln{stroke-dashoffset:0}}
+:root{--up:#03A66D;--dn:#CF304A}
+.inv{--up:#0ECB81;--dn:#F6465D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--up:#0ECB81;--dn:#F6465D}:root:not([data-theme="light"]) .inv{--up:#03A66D;--dn:#CF304A}}
+:root[data-theme="dark"]{--up:#0ECB81;--dn:#F6465D}
+:root[data-theme="dark"] .inv{--up:#03A66D;--dn:#CF304A}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.big{transition:color .3s}
+.st{display:flex;gap:8px;margin-top:14px;direction:ltr}
+.st div{flex:1;border:1px solid var(--bd);border-radius:12px;padding:8px 10px;font:700 14px Inter,sans-serif}
+.st small{display:block;font:500 10px Inter,sans-serif;color:var(--mut);letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><div class="mark">DVL</div><div><b>IA AGENT DVL</b><small id="sub"></small></div></div>
+  <div class="ctl"><div class="seg" id="lg"><button data-l="ar">ع</button><button data-l="fr">FR</button><button data-l="en">EN</button></div><button class="ib" id="th" aria-label="theme"></button></div>
+</div>
+<main id="app"></main>
+<nav id="nav"></nav>
+<script>
+var P={
+dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+btc:'<circle cx="12" cy="12" r="9.5"/><path d="M9.5 7.5v8.6M9.5 7.5h3.2a2.1 2.1 0 0 1 0 4.2H9.5M9.5 11.7h3.8a2.2 2.2 0 0 1 0 4.4H9.5M11 6v1.5M13 6v1.5M11 16.1v1.6M13 16.1v1.6"/>',
+news:'<path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2M7.5 9h6M7.5 12h6M7.5 15h3.5"/>',
+globe:'<g class="gl"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4.5" ry="9"/></g>',
+x:'<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
+tg:'<path d="M21.5 3.5 2.8 10.7l6.3 2.3 2.3 6.5 3.2-4.3 5 3.6z"/><path d="M9.1 13l12.4-9.5"/>',
+sport:'<circle cx="12" cy="12" r="9"/><path d="M12 8.2l3.4 2.5-1.3 4h-4.2l-1.3-4zM12 8.2V3M15.4 10.7l5-1.6M14.1 14.7l3 4.2M9.9 14.7l-3 4.2M8.6 10.7l-5-1.6"/>',
+bell:'<g class="bell"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/></g>',
+rep:'<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 15h6M10 18h3"/>',
+moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'};
+function ic(n,c,s){var f=n==="x";return '<svg class="i '+(c||"")+'" viewBox="0 0 24 24" '+(f?'fill="currentColor"':'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"')+(s?' style="'+s+'"':'')+' aria-hidden="true">'+P[n]+'</svg>'}
+var T={
+ar:{sub:"منصة المراقبة الذكية",nav:["لوحة التحكم","الأسواق","الأخبار","X","Telegram","الرياضة","التنبيهات","التقرير"],demo:"تجريبي",live:"مباشر",xo:"فتح الحساب على X",nc:["الكل","عالمي","اقتصاد","تقنية","كريبتو"],today:"اليوم",upc:"مباريات قادمة",nom:"لا توجد مباريات اليوم في هذه الدوريات.",upd:"آخر تحديث",rem:"الرصيد المتبقي",sf:"مباريات اليوم",sfb:"⚽ فتح مباريات اليوم على Sofascore",hi:"الأعلى 24س",lo:"الأدنى 24س",vo:"الحجم 24س",xl:"جارٍ تحميل المنشورات…",xf:"تعذر عرض المنشورات هنا، فقد يقيّد X العرض المدمج. اضغط الزر أدناه لفتح الحساب مباشرة.",btc:"بيتكوين",cr:"العملات الرقمية",fg:"الخوف والطمع",tA:"تنبيهات نشطة",tN:"أخبار اليوم",tM:"مباريات اليوم",rp:"التقرير اليومي بالذكاء الاصطناعي",news:"أخبار العالم",cat:["اقتصاد","تقنية","طاقة"],nw:["البنوك المركزية تترقب بيانات التضخم","شركة تقنية تطلق نموذج ذكاء اصطناعي جديداً","ارتفاع أسعار الطاقة عالمياً"],xp:["تحليل جديد لسوق العملات الرقمية","تحديث مهم حول الأسواق"],tg:["قناة الأسواق","مجموعة الأخبار"],tp:["إشارة تداول جديدة","ملخص صباحي"],mem:"عضو",sports:"الرياضة والاحتمالات",sp:["ريال مدريد × برشلونة","ليفربول × أرسنال","باريس × مارسيليا"],win:"احتمال فوز الفريق الأول",al:"تنبيه سعر البيتكوين",ab:"أعلى من (دولار)",save:"حفظ التنبيه",saved:"تم الحفظ: سننبهك عند تجاوز ",cats:["البيتكوين","الأخبار","X","Telegram","الرياضة","التقرير اليومي 08:00"],note:"الإشعارات الفعلية على iPhone تحتاج خادماً، وسنضيفها في الخطوة القادمة.",theme:"المظهر",tog:"تبديل الوضع الفاتح/الداكن",u:["د","س"],sumT:"البيتكوين مستقر نسبياً، الأخبار الاقتصادية هادئة، وهناك 3 مباريات مهمة اليوم.",rr:[["السوق","البيتكوين مستقر ضمن نطاق ضيق مع حجم تداول معتدل."],["الأخبار","تركيز عالمي على بيانات التضخم وقرارات البنوك المركزية."],["المنصات","نشاط متوسط على X وTelegram حول العملات الرقمية."],["الرياضة","3 مباريات كبرى، والاحتمالات تميل لصالح الفرق المضيفة."]],gen:"أُنشئ بالذكاء الاصطناعي · بيانات تجريبية"},
+fr:{sub:"Plateforme de veille intelligente",nav:["Tableau","Marchés","Actualités","X","Telegram","Sport","Alertes","Rapport"],demo:"démo",live:"direct",xo:"Ouvrir le compte sur X",nc:["Tout","Monde","Économie","Tech","Crypto"],today:"Aujourd’hui",upc:"À venir",nom:"Aucun match aujourd’hui dans ces compétitions.",upd:"Mis à jour",rem:"Crédits restants",sf:"Matchs du jour",sfb:"⚽ Ouvrir les matchs du jour sur Sofascore",hi:"Haut 24h",lo:"Bas 24h",vo:"Vol. 24h",xl:"Chargement des posts…",xf:"Impossible d’afficher les posts ici : X limite parfois l’affichage intégré. Touchez le bouton ci-dessous pour ouvrir le compte.",btc:"Bitcoin",cr:"Cryptomonnaies",fg:"Peur & Cupidité",tA:"Alertes actives",tN:"Infos du jour",tM:"Matchs du jour",rp:"Rapport quotidien IA",news:"Actualités mondiales",cat:["Économie","Tech","Énergie"],nw:["Les banques centrales attendent les chiffres de l’inflation","Une entreprise tech lance un nouveau modèle d’IA","Hausse mondiale des prix de l’énergie"],xp:["Nouvelle analyse du marché crypto","Mise à jour importante sur les marchés"],tg:["Canal Marchés","Groupe Infos"],tp:["Nouveau signal de trading","Résumé du matin"],mem:"membres",sports:"Sport et cotes",sp:["Real Madrid × Barcelone","Liverpool × Arsenal","Paris × Marseille"],win:"Probabilité de victoire de l’équipe 1",al:"Alerte prix Bitcoin",ab:"Au-dessus de (USD)",save:"Enregistrer l’alerte",saved:"Enregistré : alerte au-dessus de ",cats:["Bitcoin","Actualités","X","Telegram","Sport","Rapport quotidien 08:00"],note:"Les vraies notifications sur iPhone nécessitent un serveur, prévu à l’étape suivante.",theme:"Apparence",tog:"Basculer clair/sombre",u:["min","h"],sumT:"Le Bitcoin est relativement stable, l’actualité économique est calme et 3 matchs importants sont prévus aujourd’hui.",rr:[["Marché","Le Bitcoin reste dans une fourchette étroite, volumes modérés."],["Actualités","L’attention mondiale se porte sur l’inflation et les banques centrales."],["Réseaux","Activité moyenne sur X et Telegram autour des cryptos."],["Sport","3 grands matchs, cotes favorables aux équipes à domicile."]],gen:"Généré par IA · données de démonstration"},
+en:{sub:"Smart monitoring platform",nav:["Dashboard","Markets","News","X","Telegram","Sports","Alerts","Report"],demo:"demo",live:"live",xo:"Open account on X",nc:["All","World","Economy","Tech","Crypto"],today:"Today",upc:"Upcoming",nom:"No matches today in these competitions.",upd:"Updated",rem:"Credits left",sf:"Today’s matches",sfb:"⚽ Open today’s matches on Sofascore",hi:"24h High",lo:"24h Low",vo:"24h Vol",xl:"Loading posts…",xf:"Could not show posts here: X sometimes restricts embeds. Tap the button below to open the account.",btc:"Bitcoin",cr:"Cryptocurrencies",fg:"Fear & Greed",tA:"Active alerts",tN:"News today",tM:"Matches today",rp:"Daily AI report",news:"World news",cat:["Economy","Tech","Energy"],nw:["Central banks await inflation data","Tech firm launches new AI model","Global energy prices rise"],xp:["New crypto market analysis","Important market update"],tg:["Markets channel","News group"],tp:["New trading signal","Morning digest"],mem:"members",sports:"Sports & odds",sp:["Real Madrid × Barcelona","Liverpool × Arsenal","Paris × Marseille"],win:"Team 1 win probability",al:"Bitcoin price alert",ab:"Above (USD)",save:"Save alert",saved:"Saved: alert above ",cats:["Bitcoin","News","X","Telegram","Sports","Daily report 08:00"],note:"Real iPhone push notifications need a server, coming in the next step.",theme:"Appearance",tog:"Toggle light/dark",u:["m","h"],sumT:"Bitcoin is fairly stable, economic news is quiet, and 3 key matches are on today.",rr:[["Market","Bitcoin holds a tight range on moderate volume."],["News","Global focus on inflation data and central bank decisions."],["Social","Average activity on X and Telegram around crypto."],["Sports","3 major matches, odds favor the home sides."]],gen:"AI-generated · demo data"}};
+var L="ar",cur="dash",rng="1D",IDS=["dash","mkt","news","x","tg","sport","alert","rep"],IC=["dash","btc","globe","x","tg","sport","bell","rep"];
+var RG={"1D":[24,1],"1W":[28,2],"1M":[30,3]},CO=[["BTC",74000,1],["ETH",3200,2],["SOL",160,3],["BNB",600,4]];
+var ODD=[[2.1,3.4,3.1],[1.85,3.6,4.2],[1.6,3.9,5.5]],PR=[42,48,58],TM=[["20:45"],["18:30"],["21:00"]];
+function $(i){return document.getElementById(i)}
+function st(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function ser(n,s,b){var a=[];for(var i=0;i<n;i++)a.push(b*(1+.02*Math.sin(i*.5+s)+.01*Math.sin(i*1.3+s*2)+i*.0007*s));return a}
+function pct(a){return (a[a.length-1]-a[0])/a[0]*100}
+function fm(v,d){return v.toLocaleString("en-US",{maximumFractionDigits:d===undefined?2:d})}
+function chart(a,h,area){var mn=Math.min.apply(null,a),mx=Math.max.apply(null,a),w=320,p=a.map(function(v,i){return (i*w/(a.length-1)).toFixed(1)+" "+(h-3-(v-mn)/(mx-mn)*(h-8)).toFixed(1)}),l="M"+p.join("L");return '<svg class="'+(area?"chart":"spk")+' '+(a[a.length-1]>=a[0]?"up":"dn")+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" height="'+h+'">'+(area?'<path class="ar" d="'+l+'L'+w+' '+h+'L0 '+h+'z"/>':'')+'<path class="ln" pathLength="1" d="'+l+'"/></svg>'}
+function cg(a){var c=pct(a);return '<span class="chg '+(c>=0?"up":"dn")+'">'+(c>=0?"▲ +":"▼ ")+c.toFixed(2)+'%</span>'}
+function cv(c){return '<span class="chg '+(c>=0?"up":"dn")+'">'+(c>=0?"▲ +":"▼ ")+c.toFixed(2)+'%</span>'}
+function btcCg(a){return rng==="1D"&&CL.BTC&&CL.BTC.c!=null?cv(CL.BTC.c):cg(a)}
+function stats(t){var b=CL.BTC;if(!b||!b.h)return"";return '<div class="st"><div><small>'+t.hi+'</small>'+fm(b.h,0)+'</div><div><small>'+t.lo+'</small>'+fm(b.l,0)+'</div><div><small>'+t.vo+'</small>'+fm(b.v,0)+'</div></div>'}
+function dm(t){return '<span class="demo">'+t.demo+'</span>'}
+function hd(i,txt,t,ex){return '<div class="h">'+ic(i,ex||"")+'<span>'+txt+'</span>'+dm(t)+'</div>'}
+function ago(t,n,u){return n+" "+t.u[u]}
+function rows(items){return items.join("")}
+function render(){
+ var t=T[L],r=document.documentElement;r.lang=L;r.dir=L==="ar"?"rtl":"ltr";$("sub").textContent=t.sub;
+ document.querySelectorAll("#lg button").forEach(function(b){b.classList.toggle("on",b.dataset.l===L)});
+ var dk=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);$("th").innerHTML=ic(dk?"sun":"moon");
+ var R=RG[rng],bs=KL[rng]||ser(R[0],R[1],74000),bp=LIVE?LIVE.p:bs[bs.length-1],tb=LIVE?Object.assign({},t,{demo:t.live}):t,bc=LIVE?(LIVE.d||(CL.BTC?(CL.BTC.c>=0?"up":"dn"):"")):"",sw=sws(),d1=ser(24,1,74000),dp=d1[d1.length-1];
+ var thr=st("thr"),on=sw.filter(Boolean).length;
+ var dash='<div class="card inv">'+hd("btc",t.btc,tb,"coin hero")+'<div class="big '+bc+'" id="bp" data-v="'+bp+'">$'+fm(bp,0)+'</div>'+btcCg(bs)+chart(bs,90,1)+'</div>'
+ +'<div class="grid"><button class="card tile" data-go="mkt"><span class="mut">'+ic("btc","coin")+t.fg+'</span><span class="n">62</span><svg class="ring" viewBox="0 0 36 36" style="position:absolute;inset-inline-end:14px;top:14px"><circle class="bg" cx="18" cy="18" r="15.9"/><circle class="fg" cx="18" cy="18" r="15.9" pathLength="100" stroke-dasharray="62 100"/></svg></button>'
+ +'<button class="card tile" data-go="alert"><span class="mut">'+ic("bell")+t.tA+'</span><span class="n">'+on+'</span></button>'
+ +'<button class="card tile" data-go="news"><span class="mut">'+ic("globe")+t.tN+'</span><span class="n">'+(NW?NW.length:12)+'</span></button>'
+ +'<button class="card tile" data-go="sport"><span class="mut">'+ic("sport")+t.tM+'</span><span class="n">'+(SP?SP.filter(function(m){return isToday(m.time)}).length:3)+'</span></button></div>'
+ +'<div class="card rep">'+hd("rep",t.rp,t)+'<p>'+t.sumT+'</p><button class="btn ghost" data-go="rep">'+t.nav[7]+'</button></div>';
+ var mk='<div class="card">'+hd("btc",t.btc,tb,"coin")+'<div class="big '+bc+'">$'+fm(bp,0)+'</div>'+btcCg(bs)+chart(bs,130,1)+stats(t)+'<div class="rg" style="margin-top:14px">'+Object.keys(RG).map(function(k){return '<button data-r="'+k+'" class="'+(k===rng?"on":"")+'">'+k+'</button>'}).join("")+'</div></div>'
+ +'<div class="card">'+hd("dash",t.cr,CL.BTC?Object.assign({},t,{demo:t.live}):t)+CO.map(function(c){var d=CL[c[0]],a=d&&d.s?d.s:ser(20,c[2],c[1]);return '<div class="row"><div class="av">'+c[0].slice(0,3)+'</div><div class="grow"><b>'+c[0]+'</b>'+(d&&d.c!=null?cv(d.c):cg(a))+'</div>'+chart(a,32)+'<b class="cp" data-k="'+c[0]+'" style="direction:ltr;min-width:78px;text-align:end">$'+fm(d?d.p:a[a.length-1],c[1]>1000?0:2)+'</b></div>'}).join("")+'</div>';
+ var nw=NW?nwLive(t):'<div class="card">'+hd("news",t.news,t)+t.nw.map(function(x,i){return '<div class="row"><div class="av">'+ic("globe")+'</div><div class="grow"><b>'+x+'</b><span class="chip">'+t.cat[i]+'</span><span class="mut">'+ago(t,[12,1,3][i],i?1:0)+'</span></div></div>'}).join("")+'</div>';
+ var xs='<div class="card"><div class="h">'+ic("x")+'<span>X (Twitter)</span></div><div class="rg">'+XH.map(function(h){return '<button data-x="'+h+'" class="'+(h===xcur?"on":"")+'">@'+h+'</button>'}).join("")+'</div><div id="xbox" style="margin-top:12px;min-height:200px"></div><a class="btn ghost" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box" href="https://x.com/'+xcur+'">'+t.xo+'</a></div>';
+ var tgs='<div class="card">'+hd("tg","Telegram",t)+t.tg.map(function(x,i){return '<div class="row"><div class="av">'+ic("tg")+'</div><div class="grow"><b>'+x+'</b><span>'+t.tp[i]+'</span><div class="mut">'+["12.4K","8.1K"][i]+" "+t.mem+" · "+ago(t,[8,2][i],i)+'</div></div></div>'}).join("")+'</div>';
+ var sp='<div class="card"><div class="h">'+ic("sport")+'<span>'+t.sf+'</span></div><a class="btn" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;margin:0" href="https://www.sofascore.com/football">'+t.sfb+'</a></div>'+(SP?spLive(t):'<div class="card">'+hd("sport",t.sports,t)+t.sp.map(function(x,i){var o=ODD[i];return '<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><b>'+x+'</b><span class="mut" dir="ltr">'+TM[i][0]+'</span></div><div class="odds">'+["1","X","2"].map(function(k,j){return '<div class="'+(j===(i===2?0:i===1?0:0)&&o[j]===Math.min.apply(null,o)?"top1":"")+'"><small>'+k+'</small>'+o[j].toFixed(2)+'</div>'}).join("")+'</div><div class="bar"><i style="width:'+PR[i]+'%"></i></div><div class="mut" style="margin-top:4px">'+t.win+' · '+PR[i]+'%</div></div>'}).join("")+'</div>');
+ var al='<div class="card">'+hd("bell",t.al,t,"")+'<div class="mut" style="margin-bottom:8px">'+t.ab+'</div><input id="thr" type="number" inputmode="decimal" placeholder="100000" value="'+(thr||"")+'"><button class="btn" id="save">'+t.save+'</button><div id="msg" class="mut" style="margin-top:8px"></div></div>'
+ +'<div class="card">'+t.cats.map(function(c,i){return '<div class="sw"><span>'+c+'</span><button role="switch" data-sw="'+i+'" aria-checked="'+sw[i]+'"></button></div>'}).join("")+'<div class="mut" style="margin-top:10px">'+t.note+'</div></div>'
+ +'<div class="card"><div class="h"><span>'+t.theme+'</span></div><button class="btn ghost" id="tb" style="margin:0">'+t.tog+'</button></div>';
+ var rp='<div class="card inv rep">'+hd("rep",t.rp,t)+'<div style="font:700 20px Inter,sans-serif">'+new Date().toLocaleDateString(L==="ar"?"ar-u-nu-latn":L,{weekday:"long",day:"numeric",month:"long"})+'</div><p style="opacity:.8">'+t.sumT+'</p></div>'
+ +'<div class="card rep">'+t.rr.map(function(x,i){return '<div class="row"><h3 style="margin:0">'+x[0]+'</h3><p class="mut" style="font-size:14px;color:var(--ink)">'+x[1]+'</p></div>'}).join("")+'<div class="mut" style="margin-top:10px">'+t.gen+'</div></div>';
+ var H={dash:dash,mkt:mk,news:nw,x:xs,tg:tgs,sport:sp,alert:al,rep:rp};
+ $("app").innerHTML=IDS.map(function(id){return '<section class="sec'+(id===cur?" on":"")+'" id="s-'+id+'">'+H[id]+'</section>'}).join("");
+ $("nav").innerHTML=IDS.map(function(id,i){return '<button data-s="'+id+'" class="'+(id===cur?"on":"")+'">'+ic(IC[i],id==="btc"?"coin":"")+t.nav[i]+'</button>'}).join("");
+ var a=document.querySelector("nav .on");if(a&&a.scrollIntoView)a.scrollIntoView({inline:"center",block:"nearest"});
+ var bp2=$("bp");if(bp2&&!LIVE&&!document.documentElement.dataset.cnt){document.documentElement.dataset.cnt=1;cnt(bp2,+bp2.dataset.v)}
+ if(cur==="x")loadX();
+}
+function sws(){var a;try{a=JSON.parse(st("sw"))}catch(e){}return Array.isArray(a)&&a.length===6?a:[true,true,true,true,true,true]}
+function cnt(el,v){if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;var s=performance.now();(function f(n){if(LIVE){el.textContent="$"+fm(LIVE.p,0);return}var k=Math.min(1,(n-s)/1000),e=1-Math.pow(1-k,3);el.textContent="$"+fm(v*e,0);if(k<1)requestAnimationFrame(f);else el.textContent="$"+fm(v,0)})(s)}
+function go(id){cur=id;document.querySelectorAll(".sec").forEach(function(s){s.classList.toggle("on",s.id==="s-"+id)});document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("on",b.dataset.s===id)});var a=document.querySelector("nav .on");if(a&&a.scrollIntoView)a.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});window.scrollTo(0,0);if(id==="x")loadX();if(id==="sport")loadSports();if(id==="news")loadNews()}
+document.addEventListener("click",function(e){var g=function(s){return e.target.closest(s)},b;
+ if(b=g("#lg button")){L=b.dataset.l;st("lang",L);render();loadNews()}
+ else if(b=g("nav button")){go(b.dataset.s)}
+ else if(b=g("[data-go]")){go(b.dataset.go)}
+ else if(b=g("[data-nc]")){ncat=b.dataset.nc;render()}
+ else if(b=g("[data-x]")){xcur=b.dataset.x;render()}
+ else if(b=g("[data-r]")){rng=b.dataset.r;render();loadSeries(rng)}
+ else if(b=g("[data-sw]")){var s=sws(),i=+b.dataset.sw;s[i]=!s[i];st("sw",JSON.stringify(s));b.setAttribute("aria-checked",s[i])}
+ else if(g("#save")){var v=$("thr").value;if(v){st("thr",v);$("msg").textContent=T[L].saved+"$"+fm(+v,0)}}
+ else if(g("#tb")||g("#th")){var r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark";st("theme",r.dataset.theme);render()}
+});
+var sl=st("lang");if(sl&&T[sl])L=sl;var sh=st("theme");if(sh)document.documentElement.dataset.theme=sh;
+var SP=null,SPM={},SPT=0,WORKER="https://ia-agent-dvl.hakimel5454.workers.dev",LIVE=null,KL={},CL={},XH=["BTCprice","BangXBT","ryukXBT"],xcur="BTCprice",xt=0,HOSTS=["https://data-api.binance.vision","https://api.binance.com"];
+try{var sc=JSON.parse(st("sp"));if(sc&&Array.isArray(sc.m)){SP=sc.m;SPM={updated:sc.u,remaining:sc.r};SPT=sc.t}}catch(e){}
+var NW=null,NWL="",NWT=0,ncat="all";
+try{var nc=JSON.parse(st("nw"));if(nc&&Array.isArray(nc.i)&&nc.l===L){NW=nc.i;NWL=nc.l;NWT=nc.t}}catch(e){}
+render();
+async function jget(path){for(var i=0;i<HOSTS.length;i++){try{var r=await fetch(HOSTS[i]+path);if(r.ok)return await r.json()}catch(e){}}return null}
+function applyLive(){if(!LIVE)return;var d=LIVE.d||(CL.BTC?(CL.BTC.c>=0?"up":"dn"):"");document.querySelectorAll("#s-dash .big,#s-mkt .big").forEach(function(el){el.textContent="$"+fm(LIVE.p,0);el.classList.remove("up","dn");if(d)el.classList.add(d)})}
+async function refreshBtc(){
+ var d=await jget("/api/v3/ticker/price?symbol=BTCUSDT"),p=d?Number(d.price):0;
+ if(!p){try{var r=await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot"),j=await r.json();p=Number(j.data.amount)}catch(e){}}
+ if(!isFinite(p)||!p)return;
+ var first=!LIVE,pv=first?p:LIVE.p,dd=first?"":(p>pv?"up":p<pv?"dn":LIVE.d);LIVE={p:p,d:dd};if(first)render();else applyLive();
+}
+async function loadSeries(k){
+ if(KL[k])return;
+ var c={"1D":["1h",24],"1W":["6h",28],"1M":["1d",30]}[k],d=await jget("/api/v3/klines?symbol=BTCUSDT&interval="+c[0]+"&limit="+c[1]);
+ if(!Array.isArray(d)||d.length<2)return;
+ KL[k]=d.map(function(x){return Number(x[4])});render();
+}
+function loadX(){
+ var b=$("xbox");if(!b)return;
+ var r=document.documentElement,dk=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);
+ b.innerHTML='<div class="mut">'+T[L].xl+'</div><a class="twitter-timeline" data-height="560" data-dnt="true" data-chrome="noheader nofooter transparent" data-theme="'+(dk?"dark":"light")+'" href="https://twitter.com/'+xcur+'"></a>';
+ var tok=++xt;
+ function ld(){var q=$("xbox");if(q&&window.twttr&&window.twttr.widgets)window.twttr.widgets.load(q)}
+ if(window.twttr&&window.twttr.widgets)ld();
+ else if(!document.getElementById("twjs")){var sc=document.createElement("script");sc.id="twjs";sc.async=true;sc.src="https://platform.twitter.com/widgets.js";sc.onload=ld;document.head.appendChild(sc)}
+ else setTimeout(ld,800);
+ setTimeout(function(){if(tok!==xt)return;var q=$("xbox");if(q&&!q.querySelector("iframe"))q.innerHTML='<div class="mut">'+T[L].xf+'</div>'},9000);
+}
+function LC(){return L==="ar"?"ar-u-nu-latn":L}
+function isToday(iso){return new Date(iso).toDateString()===new Date().toDateString()}
+function spRow(m,t){
+ var o=m.odds||{},ks=["1","X","2"],v=ks.map(function(k){return o[k]}),have=v.every(function(x){return x}),mn=have?Math.min.apply(null,v):0,d=new Date(m.time),
+ tm=d.toLocaleTimeString(LC(),{hour:"2-digit",minute:"2-digit"}),dt=isToday(m.time)?"":d.toLocaleDateString(LC(),{weekday:"short",day:"numeric",month:"short"})+" ",
+ p=have?(1/o["1"])/(1/o["1"]+1/o["X"]+1/o["2"])*100:0;
+ return '<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+m.home+' × '+m.away+'</b><span class="mut" dir="ltr">'+dt+tm+'</span></div><div class="mut" style="margin-top:2px"><span class="chip">'+m.league+'</span>'+(m.book||"")+'</div>'
+ +(have?'<div class="odds">'+ks.map(function(k,j){return '<div class="'+(v[j]===mn?"top1":"")+'"><small>'+k+'</small>'+v[j].toFixed(2)+'</div>'}).join("")+'</div><div class="bar"><i style="width:'+p.toFixed(0)+'%"></i></div><div class="mut" style="margin-top:4px">'+t.win+' · '+p.toFixed(0)+'%</div>':'')+'</div>';
+}
+function spLive(t){
+ var now=new Date(),td=SP.filter(function(m){return isToday(m.time)}),up=SP.filter(function(m){return !isToday(m.time)&&new Date(m.time)>now}).slice(0,8),tl=Object.assign({},t,{demo:t.live}),
+ meta='<div class="mut" style="margin:4px 4px 12px">'+t.upd+': '+new Date(SPM.updated).toLocaleTimeString(LC(),{hour:"2-digit",minute:"2-digit"})+(SPM.remaining?' · '+t.rem+': '+SPM.remaining:'')+'</div>';
+ return '<div class="card">'+hd("sport",t.sports+' · '+t.today,tl)+(td.length?td.map(function(m){return spRow(m,t)}).join(""):'<div class="mut">'+t.nom+'</div>')+'</div>'
+  +(up.length?'<div class="card"><div class="h"><span>'+t.upc+'</span></div>'+up.map(function(m){return spRow(m,t)}).join("")+'</div>':'')+meta;
+}
+async function loadSports(){
+ if(SP&&Date.now()-SPT<600000)return;
+ try{var r=await fetch(WORKER+"/matches");if(!r.ok)throw 0;var d=await r.json();if(!Array.isArray(d.matches))throw 0;
+  SP=d.matches;SPM={updated:d.updated,remaining:d.remaining};SPT=Date.now();st("sp",JSON.stringify({m:SP,u:d.updated,r:d.remaining,t:SPT}));render()}catch(e){}
+}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function agoTs(ts,t){if(!ts)return"";var m=Math.max(1,Math.round((Date.now()-ts)/60000));if(m<60)return m+" "+t.u[0];if(m<1440)return Math.round(m/60)+" "+t.u[1];return new Date(ts).toLocaleDateString(LC(),{day:"numeric",month:"short"})}
+function nwLive(t){
+ var CI={world:"globe",economy:"news",tech:"dash",crypto:"btc"},CK=["all","world","economy","tech","crypto"],tl=Object.assign({},t,{demo:t.live}),
+ it=NW.filter(function(x){return ncat==="all"||x.c===ncat}).slice(0,25);
+ return '<div class="card">'+hd("news",t.news,tl)+'<div class="rg" style="margin-bottom:12px;overflow-x:auto">'+CK.map(function(k,i){return '<button data-nc="'+k+'" class="'+(k===ncat?"on":"")+'">'+t.nc[i]+'</button>'}).join("")+'</div>'
+ +it.map(function(x){var ok=/^https?:\/\//.test(x.l);return '<a class="row" '+(ok?'href="'+esc(x.l)+'" target="_blank" rel="noopener"':'')+' style="text-decoration:none;color:inherit"><div class="av">'+ic(CI[x.c]||"news")+'</div><div class="grow"><b dir="auto">'+esc(x.t)+'</b><span class="chip">'+esc(x.s)+'</span><span class="mut">'+agoTs(x.d,t)+'</span></div></a>'}).join("")+'</div>';
+}
+async function loadNews(){
+ if(NW&&NWL===L&&Date.now()-NWT<600000)return;
+ var lg=L;
+ try{var r=await fetch(WORKER+"/news?lang="+lg);if(!r.ok)throw 0;var d=await r.json();if(!Array.isArray(d.items)||!d.items.length)throw 0;
+  NW=d.items;NWL=lg;NWT=Date.now();st("nw",JSON.stringify({l:lg,i:NW,t:NWT}));render()}catch(e){}
+}
+async function refreshCoins(){
+ var S=["BTC","ETH","SOL","BNB"],d=await jget("/api/v3/ticker/24hr?symbols="+encodeURIComponent(JSON.stringify(S.map(function(x){return x+"USDT"}))));
+ if(!Array.isArray(d))return;
+ var first=!CL.BTC;
+ d.forEach(function(o){var k=o.symbol.replace("USDT","");CL[k]=Object.assign(CL[k]||{},{p:Number(o.lastPrice),c:Number(o.priceChangePercent),h:Number(o.highPrice),l:Number(o.lowPrice),v:Number(o.volume)})});
+ if(first){await Promise.all(S.map(async function(k){var z=await jget("/api/v3/klines?symbol="+k+"USDT&interval=1h&limit=24");if(Array.isArray(z)&&z.length>1&&CL[k])CL[k].s=z.map(function(x){return Number(x[4])})}));render()}
+ else document.querySelectorAll(".cp").forEach(function(el){var q=CL[el.dataset.k];if(q)el.textContent="$"+fm(q.p,q.p>1000?0:2)});
+}
+refreshBtc();loadSeries("1D");setInterval(refreshBtc,20000);
+refreshCoins();setInterval(refreshCoins,30000);
+loadSports();loadNews();
+</script>
+</body>
+</html>
