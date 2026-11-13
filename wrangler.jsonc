@@ -3,5 +3,7 @@
   "main": "index.js",
   "compatibility_date": "2025-11-01",
   // needed by the Anthropic SDK (/report)
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  // required by `wrangler preview` (Cloudflare preview builds for non-main branches)
+  "previews": {}
 }
