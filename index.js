@@ -5,6 +5,7 @@
 //   /scores               live scores & today's results from ESPN (free, cached 45 s)
 //   /fng                  crypto Fear & Greed index (cached 30 min)
 //   /tg?ch=<channel>      latest posts of a public Telegram channel (cached 5 min)
+//   /coin?sym=BTC&lang=ar  coin profile from CoinGecko (cached 6 h)
 //   /report?lang=ar|fr|en daily report written by Claude from the live data (needs ANTHROPIC_API_KEY, cached 3 h)
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -181,6 +182,42 @@ async function scores() {
   return list.length ? store("scores", body) : body;
 }
 
+// ---------- /coin ----------
+const CG_IDS = { BTC: "bitcoin", ETH: "ethereum", SOL: "solana", BNB: "binancecoin", XRP: "ripple", DOGE: "dogecoin", ADA: "cardano", TON: "the-open-network" };
+function parseCoin(j, lang) {
+  const md = j.market_data || {}, usd = o => (o && o.usd != null ? o.usd : null), d = j.description || {}, l = j.links || {};
+  const strip = x => dec(x || "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
+  let desc = strip(d[lang]), descLang = lang;
+  if (!desc) { desc = strip(d.en); descLang = "en"; }
+  const first = a => (Array.isArray(a) ? a.find(Boolean) : a) || null;
+  return {
+    id: j.id, sym: (j.symbol || "").toUpperCase(), name: (j.localization && j.localization[lang]) || j.name,
+    image: j.image && (j.image.large || j.image.small), rank: j.market_cap_rank || null,
+    desc: desc.slice(0, 1500), descLang, genesis: j.genesis_date || null,
+    categories: (j.categories || []).filter(Boolean).slice(0, 4),
+    marketCap: usd(md.market_cap), fdv: usd(md.fully_diluted_valuation), volume: usd(md.total_volume),
+    circulating: md.circulating_supply || null, total: md.total_supply || null, max: md.max_supply || null,
+    ath: usd(md.ath), athDate: md.ath_date && md.ath_date.usd, athChange: usd(md.ath_change_percentage),
+    atl: usd(md.atl), atlDate: md.atl_date && md.atl_date.usd,
+    ch7d: md.price_change_percentage_7d != null ? md.price_change_percentage_7d : null,
+    ch30d: md.price_change_percentage_30d != null ? md.price_change_percentage_30d : null,
+    ch1y: md.price_change_percentage_1y != null ? md.price_change_percentage_1y : null,
+    links: {
+      web: first(l.homepage), whitepaper: l.whitepaper || null, explorer: first(l.blockchain_site),
+      x: l.twitter_screen_name ? "https://x.com/" + l.twitter_screen_name : null,
+      reddit: l.subreddit_url || null, github: first(l.repos_url && l.repos_url.github)
+    }
+  };
+}
+async function coin(sym, lang) {
+  const key = "coin:" + sym + ":" + lang;
+  const c = cached(key, 6 * 60 * MIN);
+  if (c) return c;
+  const url = "https://api.coingecko.com/api/v3/coins/" + CG_IDS[sym] + "?localization=true&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false";
+  const j = await (await get(url, 8000, "application/json")).json();
+  return store(key, JSON.stringify(parseCoin(j, lang)));
+}
+
 // ---------- /fng ----------
 async function fng() {
   const c = cached("fng", 30 * MIN);
@@ -338,6 +375,11 @@ export default {
         }
         case "/scores":
           return reply(await scores());
+        case "/coin": {
+          const sym = (u.searchParams.get("sym") || "").toUpperCase(), q = u.searchParams.get("lang");
+          if (!CG_IDS[sym]) return reply(JSON.stringify({ error: "unknown coin" }), 400);
+          return reply(await coin(sym, ["ar", "fr", "en"].includes(q) ? q : "en"));
+        }
         case "/fng":
           return reply(await fng());
         case "/tg": {
@@ -351,7 +393,7 @@ export default {
           return reply(r.body, r.status || 200);
         }
         default:
-          return reply(JSON.stringify({ ok: true, name: "IA AGENT DVL", routes: ["/news", "/matches", "/scores", "/fng", "/tg", "/report"] }));
+          return reply(JSON.stringify({ ok: true, name: "IA AGENT DVL", routes: ["/news", "/matches", "/scores", "/fng", "/tg", "/coin", "/report"] }));
       }
     } catch (e) {
       return reply(JSON.stringify({ error: "fetch failed" }), 502);
