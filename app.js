@@ -41,7 +41,7 @@ const T = {
     btc: "بيتكوين", cr: "العملات الرقمية", fg: "الخوف والطمع", hi: "الأعلى 24س", lo: "الأدنى 24س", vo: "الحجم 24س",
     tA: "تنبيهات نشطة", tN: "أخبار اليوم", tM: "مباريات اليوم", tL: "مباشر الآن",
     news: "أخبار العالم", nc: ["الكل", "عالمي", "اقتصاد", "تقنية", "كريبتو"],
-    xo: "فتح الحساب على X", xl: "جارٍ تحميل المنشورات…", xf: "تعذّر عرض المنشورات هنا، فقد يقيّد X العرض المدمج. اضغط الزر أدناه لفتح الحساب مباشرة.",
+    xo: "فتح الحساب على X", xn: "لم يعد X يسمح بعرض المنشورات داخل المواقع للزوار. اضغط على الحساب لفتحه في تطبيق X.", xl: "جارٍ تحميل المنشورات…", xf: "تعذّر عرض المنشورات هنا، فقد يقيّد X العرض المدمج. اضغط الزر أدناه لفتح الحساب مباشرة.",
     tgT: "قنوات Telegram", tgPh: "اسم القناة، مثل cointelegraph", tgAdd: "إضافة", tgOpen: "فتح في Telegram", tgDel: "حذف القناة", tgErr: "تعذّر عرض هذه القناة، فقد تكون خاصة أو غير موجودة.", tgBad: "اسم قناة غير صالح.", subs: "مشترك", media: "📷 وسائط",
     sf: "مباريات اليوم", sfb: "⚽ فتح مباريات اليوم على Sofascore", sc: "النتائج المباشرة", all: "الكل", nos: "لا توجد مباريات في هذه الفترة.", ft: "انتهت",
     starHint: "اضغط ☆ لمتابعة مباراة: يصلك تنبيه عند بدايتها وعند كل هدف.",
@@ -69,7 +69,7 @@ const T = {
     btc: "Bitcoin", cr: "Cryptomonnaies", fg: "Peur & Cupidité", hi: "Haut 24h", lo: "Bas 24h", vo: "Vol. 24h",
     tA: "Alertes actives", tN: "Infos du jour", tM: "Matchs du jour", tL: "En direct",
     news: "Actualités mondiales", nc: ["Tout", "Monde", "Économie", "Tech", "Crypto"],
-    xo: "Ouvrir le compte sur X", xl: "Chargement des posts…", xf: "Impossible d’afficher les posts ici : X limite parfois l’affichage intégré. Touchez le bouton ci-dessous pour ouvrir le compte.",
+    xo: "Ouvrir le compte sur X", xn: "X n’affiche plus les publications dans les sites pour les visiteurs. Touchez un compte pour l’ouvrir dans l’app X.", xl: "Chargement des posts…", xf: "Impossible d’afficher les posts ici : X limite parfois l’affichage intégré. Touchez le bouton ci-dessous pour ouvrir le compte.",
     tgT: "Canaux Telegram", tgPh: "Nom du canal, ex. cointelegraph", tgAdd: "Ajouter", tgOpen: "Ouvrir dans Telegram", tgDel: "Supprimer le canal", tgErr: "Impossible d’afficher ce canal (privé ou inexistant).", tgBad: "Nom de canal invalide.", subs: "abonnés", media: "📷 média",
     sf: "Matchs du jour", sfb: "⚽ Ouvrir les matchs du jour sur Sofascore", sc: "Scores en direct", all: "Tout", nos: "Aucun match sur cette période.", ft: "Terminé",
     starHint: "Touchez ☆ pour suivre un match : alerte au coup d’envoi et à chaque but.",
@@ -97,7 +97,7 @@ const T = {
     btc: "Bitcoin", cr: "Cryptocurrencies", fg: "Fear & Greed", hi: "24h High", lo: "24h Low", vo: "24h Vol",
     tA: "Active alerts", tN: "News today", tM: "Matches today", tL: "Live now",
     news: "World news", nc: ["All", "World", "Economy", "Tech", "Crypto"],
-    xo: "Open account on X", xl: "Loading posts…", xf: "Could not show posts here: X sometimes restricts embeds. Tap the button below to open the account.",
+    xo: "Open account on X", xn: "X no longer shows posts inside websites to visitors. Tap an account to open it in the X app.", xl: "Loading posts…", xf: "Could not show posts here: X sometimes restricts embeds. Tap the button below to open the account.",
     tgT: "Telegram channels", tgPh: "Channel name, e.g. cointelegraph", tgAdd: "Add", tgOpen: "Open in Telegram", tgDel: "Remove channel", tgErr: "Could not show this channel (private or missing).", tgBad: "Invalid channel name.", subs: "subscribers", media: "📷 media",
     sf: "Today’s matches", sfb: "⚽ Open today’s matches on Sofascore", sc: "Live scores", all: "All", nos: "No matches in this period.", ft: "FT",
     starHint: "Tap ☆ to follow a match: get alerted at kick-off and on every goal.",
@@ -162,7 +162,7 @@ async function bget(path) { for (const h of HOSTS) { const d = await jget(h + pa
 
 /* ---------- state ---------- */
 let L = T[raw("lang")] ? raw("lang") : "ar";
-let cur = "dash", rng = "1D", sel = "BTC", ncat = "all", xcur = XH[0], scat = "all", pending = false, xt = 0;
+let cur = "dash", rng = "1D", sel = "BTC", ncat = "all", scat = "all", pending = false;
 const CL = {};          // coin -> {p, c, h, l, v, s, d}
 let CLT = 0, CLlive = false;
 const KL = {};          // "BTC:1D" -> closes
@@ -287,13 +287,13 @@ function summary(t) {
   return t.sum(ltr(pctS(b.c)), NW ? todayNews() : 0, todayMatches().length);
 }
 function vMkt(t) {
-  const q = CL[sel], key = sel + ":" + rng, s = KL[key] || (rng === "1D" && q && q.s), kind = coinKind();
+  const q = CL[sel], kind = coinKind();
   const name = (COINS.find(c => c[0] === sel) || [sel, sel])[1];
   let top = '<div class="card">' + hd("btc", name + " · " + sel, kind, t, "coin");
   top += q && q.p ? '<div class="big ' + (q.d || (q.c >= 0 ? "up" : "dn")) + '">' + usd(q.p) + "</div>" + (q.c != null ? cv(q.c) : "") : '<div class="mut">' + t.loading + "</div>";
-  top += chart(s, 130, 1);
+  top += '<div id="cslot" class="cslot"></div>';
   if (q && q.h) top += '<div class="st"><div><small>' + t.hi + "</small>" + usd(q.h) + "</div><div><small>" + t.lo + "</small>" + usd(q.l) + "</div><div><small>" + t.vo + "</small>" + compact(q.v) + "</div></div>";
-  top += '<div class="rg" style="margin-top:14px">' + Object.keys(RANGES).map(k => '<button data-r="' + k + '" class="' + (k === rng ? "on" : "") + '">' + k + "</button>").join("") + "</div></div>";
+  top += '<div class="rg" style="margin-top:14px">' + Object.keys(CINT).map(k => '<button data-ci="' + k + '" class="' + (k === cint ? "on" : "") + '">' + k + "</button>").join("") + "</div></div>";
   const list = '<div class="card">' + hd("dash", t.cr, kind, t) + COINS.map(([k, n]) => {
     const d = CL[k] || {};
     return '<button class="row' + (k === sel ? " sel" : "") + '" data-coin="' + k + '"><div class="av">' + k.slice(0, 4) + '</div><div class="grow"><b>' + n + "</b>" + (d.c != null ? cv(d.c) : '<span class="mut">' + k + "</span>") + "</div>" + chart(d.s, 32) + '<b style="direction:ltr;min-width:84px;text-align:end">' + (d.p ? usd(d.p) : "–") + "</b></button>";
@@ -312,8 +312,11 @@ function vNews(t) {
     }).join("") + "</div>";
 }
 function vX(t) {
-  return '<div class="card"><div class="h">' + ic("x") + '<span>X (Twitter)</span></div><div class="rg">' + XH.map(h => '<button data-x="' + h + '" class="' + (h === xcur ? "on" : "") + '">@' + h + "</button>").join("")
-    + '</div><div id="xbox" data-k="' + xcur + (isDark() ? "d" : "l") + '" style="margin-top:12px;min-height:200px"></div><a class="btn ghost" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box" href="https://x.com/' + xcur + '">' + t.xo + "</a></div>";
+  // X no longer shows embedded timelines to logged-out visitors (and a site can't detect the empty frame),
+  // so the tab links straight to each account in the X app instead.
+  return '<div class="card"><div class="h">' + ic("x") + "<span>X (Twitter)</span></div>"
+    + '<div class="mut" style="margin-bottom:6px">' + t.xn + "</div>"
+    + XH.map(h => '<a class="row" target="_blank" rel="noopener" style="text-decoration:none;color:inherit" href="https://x.com/' + h + '"><div class="av">' + ic("x") + '</div><div class="grow"><b>@' + h + '</b><span class="mut">' + t.xo + "</span></div><span>↗</span></a>").join("") + "</div>";
 }
 function vTg(t) {
   const d = TG[tgcur];
@@ -467,9 +470,10 @@ function render() {
     const h = VIEWS[id](t);
     if (h !== last[id]) {
       el.innerHTML = h; last[id] = h;
-      if (id === "x" && cur === "x") loadX();
+      if (id === "mkt") mountChart();
     }
   }
+  if (CH && CH.theme !== isDark()) chartTheme();
   const nav = IDS.map((id, i) => '<button data-s="' + id + '" class="' + (id === cur ? "on" : "") + '">' + ic(NAV_IC[i]) + t.nav[i] + "</button>").join("");
   if (nav !== last.nav) { $("nav").innerHTML = nav; last.nav = nav; }
 }
@@ -480,11 +484,10 @@ function go(id) {
   const a = document.querySelector("nav .on"); if (a && a.scrollIntoView) a.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   window.scrollTo(0, 0);
   if (sec) { sec.classList.remove("anim"); void sec.offsetWidth; sec.classList.add("anim"); setTimeout(() => sec.classList.remove("anim"), 1500); }
-  if (id === "x") loadX();
   if (id === "sport") { loadSports(); loadScores(true); }
   if (id === "news") loadNews();
   if (id === "tg") loadTg(tgcur);
-  if (id === "mkt") loadSeries(sel, rng);
+  if (id === "mkt") mountChart();
   if (id === "rep") loadAi();
 }
 
@@ -497,9 +500,8 @@ document.addEventListener("click", e => {
   else if ((b = g("nav button"))) go(b.dataset.s);
   else if ((b = g("[data-go]"))) go(b.dataset.go);
   else if ((b = g("[data-nc]"))) { ncat = b.dataset.nc; render(); }
-  else if ((b = g("[data-x]"))) { xcur = b.dataset.x; render(); }
-  else if ((b = g("[data-r]"))) { rng = b.dataset.r; render(); loadSeries(sel, rng); }
-  else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadSeries(sel, rng); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  else if ((b = g("[data-ci]"))) { cint = b.dataset.ci; save("cint", cint); render(); loadCandles(); }
+  else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadCandles(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   else if ((b = g("[data-sc]"))) { scat = b.dataset.sc; render(); }
   else if ((b = g("[data-star]"))) {
     const id = b.dataset.star, m = SC && SC.matches.find(x => x.id === id);
@@ -558,7 +560,7 @@ async function refreshCoins() {
   if (!ok) return;
   CLT = Date.now(); CLlive = true;
   save("coins", { t: CLT, d: CL });
-  checkPriceAlerts(); render();
+  checkPriceAlerts(); render(); tickCandle();
 }
 let sparkT = 0;
 async function loadSparks() {
@@ -626,6 +628,111 @@ async function loadTg(ch) {
   const keep = {}; tgch.forEach(k => { if (TG[k] && TG[k].posts) keep[k] = TG[k]; }); save("tg", keep);
   render();
 }
+/* ---------- candlestick chart (TradingView Lightweight Charts, Apache-2.0) ---------- */
+const LW_URL = "https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js";
+const CINT = { "15m": "15m", "1H": "1h", "4H": "4h", "1D": "1d", "1W": "1w" };
+let cint = CINT[raw("cint")] ? raw("cint") : "1H";
+let lwP = null, CH = null;
+const CK = {}; // "BTC:1H" -> { t, bars, vols }
+function loadLW() {
+  if (window.LightweightCharts) return Promise.resolve(true);
+  if (!lwP) lwP = new Promise(res => {
+    const sc = document.createElement("script");
+    sc.src = LW_URL; sc.async = true;
+    sc.onload = () => res(!!window.LightweightCharts);
+    sc.onerror = () => { lwP = null; res(false); };
+    document.head.appendChild(sc);
+  });
+  return lwP;
+}
+function cColors() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  return { text: v("--mut"), grid: v("--soft"), up: v("--up"), dn: v("--dn") };
+}
+function chartTheme() {
+  const c = cColors();
+  CH.chart.applyOptions({ layout: { textColor: c.text }, grid: { horzLines: { color: c.grid } } });
+  CH.candles.applyOptions({ upColor: c.up, downColor: c.dn, wickUpColor: c.up, wickDownColor: c.dn });
+  CH.theme = isDark();
+}
+function legend(bar) {
+  if (!CH || !bar) return;
+  const ch = (bar.close - bar.open) / bar.open * 100, f = v => usd(v).slice(1);
+  CH.legend.innerHTML = '<span class="mut">O</span> ' + f(bar.open) + ' <span class="mut">H</span> ' + f(bar.high) + ' <span class="mut">L</span> ' + f(bar.low) + ' <span class="mut">C</span> ' + f(bar.close) + ' <span class="' + (ch >= 0 ? "up" : "dn") + '">' + pctS(ch) + "</span>";
+}
+function makeChart() {
+  const el = document.createElement("div"), lg = document.createElement("div"), host = document.createElement("div");
+  el.className = "cbox"; lg.className = "clegend"; host.className = "chost";
+  el.append(lg, host);
+  const c = cColors();
+  const chart = LightweightCharts.createChart(host, {
+    autoSize: true,
+    layout: { background: { type: "solid", color: "transparent" }, textColor: c.text, fontFamily: "Inter, sans-serif", fontSize: 11 },
+    grid: { vertLines: { visible: false }, horzLines: { color: c.grid } },
+    rightPriceScale: { borderVisible: false },
+    timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, barSpacing: 6, rightOffset: 3 },
+    crosshair: { mode: 0 }
+  });
+  const candles = chart.addCandlestickSeries({ upColor: c.up, downColor: c.dn, wickUpColor: c.up, wickDownColor: c.dn, borderVisible: false });
+  candles.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.24 } });
+  const vols = chart.addHistogramSeries({ priceFormat: { type: "volume" }, priceScaleId: "", lastValueVisible: false, priceLineVisible: false });
+  vols.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+  CH = { el, legend: lg, chart, candles, vols, key: null, last: null, theme: isDark() };
+  chart.subscribeCrosshairMove(p => legend((p && p.time && p.seriesData.get(candles)) || CH.last));
+}
+async function mountChart() {
+  const slot = $("cslot");
+  if (!slot) return;
+  if (CH) {
+    if (CH.el.parentNode !== slot) slot.appendChild(CH.el);
+    if (CH.theme !== isDark()) chartTheme();
+    if (CH.key !== sel + ":" + cint) loadCandles();
+    return;
+  }
+  slot.innerHTML = '<div class="empty">' + T[L].loading + "</div>";
+  const ok = await loadLW();
+  const s2 = $("cslot");
+  if (!s2) return;
+  if (!ok) { s2.innerHTML = chart(KL[sel + ":1D"] || (CL[sel] && CL[sel].s), 130, 1); return; } // offline: simple line chart
+  if (!CH) makeChart();
+  s2.innerHTML = ""; s2.appendChild(CH.el);
+  loadCandles();
+}
+async function loadCandles(force) {
+  if (!CH) return;
+  const k = sel, iv = cint, key = k + ":" + iv, c = CK[key];
+  let fresh = c && Date.now() - c.t < MIN;
+  if (!c) CH.legend.innerHTML = '<span class="mut">' + T[L].loading + "</span>";
+  if (c && CH.key !== key) show(key, c);
+  if (fresh && !force) return;
+  const d = await bget("/api/v3/klines?symbol=" + k + "USDT&interval=" + CINT[iv] + "&limit=300");
+  if (!Array.isArray(d) || !d.length) { if (!c) CH.legend.innerHTML = '<span class="mut">' + T[L].err + "</span>"; return; }
+  const tz = -new Date().getTimezoneOffset() * 60, col = cColors();
+  const bars = d.map(x => ({ time: x[0] / 1000 + tz, open: +x[1], high: +x[2], low: +x[3], close: +x[4] }));
+  const vols = d.map((x, i) => ({ time: bars[i].time, value: +x[5], color: (bars[i].close >= bars[i].open ? col.up : col.dn) + "55" }));
+  CK[key] = { t: Date.now(), bars, vols };
+  if (sel + ":" + cint === key) show(key, CK[key]);
+}
+function show(key, c) {
+  const first = CH.key !== key, p = c.bars[c.bars.length - 1].close;
+  const prec = p >= 1000 ? 2 : p >= 1 ? 3 : 5;
+  CH.candles.applyOptions({ priceFormat: { type: "price", precision: prec, minMove: Math.pow(10, -prec) } });
+  CH.candles.setData(c.bars); CH.vols.setData(c.vols);
+  CH.key = key; CH.last = c.bars[c.bars.length - 1];
+  if (first) CH.chart.timeScale().scrollToRealTime();
+  legend(CH.last);
+}
+function tickCandle() {
+  // live price moves the last candle; a fresh batch is pulled once a minute while the chart is visible
+  if (!CH || !CH.last || cur !== "mkt" || CH.key !== sel + ":" + cint) return;
+  const p = CL[sel] && CL[sel].p;
+  if (!p) return;
+  const b = CH.last, nb = { time: b.time, open: b.open, high: Math.max(b.high, p), low: Math.min(b.low, p), close: p };
+  CH.candles.update(nb); CH.last = nb;
+  const c = CK[CH.key]; if (c) c.bars[c.bars.length - 1] = nb;
+  legend(nb);
+  if (c && Date.now() - c.t > MIN) loadCandles(true);
+}
 async function loadAi() {
   const lg = L, a = AI[lg];
   if (aiBusy || (a && Date.now() - Date.parse(a.generated) < 3 * 60 * MIN)) return;
@@ -634,24 +741,6 @@ async function loadAi() {
   aiBusy = false;
   if (d && d.report && d.report.headline) { AI[lg] = d; save("ai_" + lg, d); }
   render();
-}
-function loadX() {
-  const b = $("xbox"); if (!b) return;
-  b.innerHTML = '<div class="mut">' + T[L].xl + '</div><a class="twitter-timeline" data-height="560" data-dnt="true" data-chrome="noheader nofooter transparent" data-theme="' + (isDark() ? "dark" : "light") + '" href="https://twitter.com/' + xcur + '"></a>';
-  const tok = ++xt;
-  const ld = () => { const q = $("xbox"); if (q && window.twttr && window.twttr.widgets) window.twttr.widgets.load(q); };
-  if (window.twttr && window.twttr.widgets) ld();
-  else if (!$("twjs")) { const sc = document.createElement("script"); sc.id = "twjs"; sc.async = true; sc.src = "https://platform.twitter.com/widgets.js"; sc.onload = ld; document.head.appendChild(sc); }
-  else setTimeout(ld, 800);
-  // X often renders nothing for logged-out visitors (no iframe, or an empty one): fall back to direct links
-  setTimeout(() => {
-    if (tok !== xt) return;
-    const q = $("xbox"), f = q && q.querySelector("iframe");
-    if (q && (!f || f.offsetHeight < 150)) {
-      q.style.minHeight = "0";
-      q.innerHTML = '<div class="mut" style="margin-bottom:10px">' + T[L].xf + "</div>" + XH.map(h => '<a class="row" target="_blank" rel="noopener" style="text-decoration:none;color:inherit" href="https://x.com/' + h + '"><div class="av">' + ic("x") + '</div><div class="grow"><b>@' + h + "</b></div><span>↗</span></a>").join("");
-    }
-  }, 8000);
 }
 function refreshAll() {
   if (!navigator.onLine) return;
