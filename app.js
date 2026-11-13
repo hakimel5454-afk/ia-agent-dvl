@@ -41,7 +41,7 @@ const T = {
     btc: "بيتكوين", cr: "العملات الرقمية", fg: "الخوف والطمع", hi: "الأعلى 24س", lo: "الأدنى 24س", vo: "الحجم 24س",
     tA: "تنبيهات نشطة", tN: "أخبار اليوم", tM: "مباريات اليوم", tL: "مباشر الآن",
     news: "أخبار العالم", nc: ["الكل", "عالمي", "اقتصاد", "تقنية", "كريبتو"],
-    xo: "فتح الحساب على X", xl: "جارٍ تحميل المنشورات…", xf: "تعذّر عرض المنشورات هنا، فقد يقيّد X العرض المدمج. اضغط الزر أدناه لفتح الحساب مباشرة.",
+    xo: "فتح الحساب على X", xn: "لم يعد X يسمح بعرض المنشورات داخل المواقع للزوار. اضغط على الحساب لفتحه في تطبيق X.", xl: "جارٍ تحميل المنشورات…", xf: "تعذّر عرض المنشورات هنا، فقد يقيّد X العرض المدمج. اضغط الزر أدناه لفتح الحساب مباشرة.",
     tgT: "قنوات Telegram", tgPh: "اسم القناة، مثل cointelegraph", tgAdd: "إضافة", tgOpen: "فتح في Telegram", tgDel: "حذف القناة", tgErr: "تعذّر عرض هذه القناة، فقد تكون خاصة أو غير موجودة.", tgBad: "اسم قناة غير صالح.", subs: "مشترك", media: "📷 وسائط",
     sf: "مباريات اليوم", sfb: "⚽ فتح مباريات اليوم على Sofascore", sc: "النتائج المباشرة", all: "الكل", nos: "لا توجد مباريات في هذه الفترة.", ft: "انتهت",
     starHint: "اضغط ☆ لمتابعة مباراة: يصلك تنبيه عند بدايتها وعند كل هدف.",
@@ -69,7 +69,7 @@ const T = {
     btc: "Bitcoin", cr: "Cryptomonnaies", fg: "Peur & Cupidité", hi: "Haut 24h", lo: "Bas 24h", vo: "Vol. 24h",
     tA: "Alertes actives", tN: "Infos du jour", tM: "Matchs du jour", tL: "En direct",
     news: "Actualités mondiales", nc: ["Tout", "Monde", "Économie", "Tech", "Crypto"],
-    xo: "Ouvrir le compte sur X", xl: "Chargement des posts…", xf: "Impossible d’afficher les posts ici : X limite parfois l’affichage intégré. Touchez le bouton ci-dessous pour ouvrir le compte.",
+    xo: "Ouvrir le compte sur X", xn: "X n’affiche plus les publications dans les sites pour les visiteurs. Touchez un compte pour l’ouvrir dans l’app X.", xl: "Chargement des posts…", xf: "Impossible d’afficher les posts ici : X limite parfois l’affichage intégré. Touchez le bouton ci-dessous pour ouvrir le compte.",
     tgT: "Canaux Telegram", tgPh: "Nom du canal, ex. cointelegraph", tgAdd: "Ajouter", tgOpen: "Ouvrir dans Telegram", tgDel: "Supprimer le canal", tgErr: "Impossible d’afficher ce canal (privé ou inexistant).", tgBad: "Nom de canal invalide.", subs: "abonnés", media: "📷 média",
     sf: "Matchs du jour", sfb: "⚽ Ouvrir les matchs du jour sur Sofascore", sc: "Scores en direct", all: "Tout", nos: "Aucun match sur cette période.", ft: "Terminé",
     starHint: "Touchez ☆ pour suivre un match : alerte au coup d’envoi et à chaque but.",
@@ -97,7 +97,7 @@ const T = {
     btc: "Bitcoin", cr: "Cryptocurrencies", fg: "Fear & Greed", hi: "24h High", lo: "24h Low", vo: "24h Vol",
     tA: "Active alerts", tN: "News today", tM: "Matches today", tL: "Live now",
     news: "World news", nc: ["All", "World", "Economy", "Tech", "Crypto"],
-    xo: "Open account on X", xl: "Loading posts…", xf: "Could not show posts here: X sometimes restricts embeds. Tap the button below to open the account.",
+    xo: "Open account on X", xn: "X no longer shows posts inside websites to visitors. Tap an account to open it in the X app.", xl: "Loading posts…", xf: "Could not show posts here: X sometimes restricts embeds. Tap the button below to open the account.",
     tgT: "Telegram channels", tgPh: "Channel name, e.g. cointelegraph", tgAdd: "Add", tgOpen: "Open in Telegram", tgDel: "Remove channel", tgErr: "Could not show this channel (private or missing).", tgBad: "Invalid channel name.", subs: "subscribers", media: "📷 media",
     sf: "Today’s matches", sfb: "⚽ Open today’s matches on Sofascore", sc: "Live scores", all: "All", nos: "No matches in this period.", ft: "FT",
     starHint: "Tap ☆ to follow a match: get alerted at kick-off and on every goal.",
@@ -162,7 +162,7 @@ async function bget(path) { for (const h of HOSTS) { const d = await jget(h + pa
 
 /* ---------- state ---------- */
 let L = T[raw("lang")] ? raw("lang") : "ar";
-let cur = "dash", rng = "1D", sel = "BTC", ncat = "all", xcur = XH[0], scat = "all", pending = false, xt = 0;
+let cur = "dash", rng = "1D", sel = "BTC", ncat = "all", scat = "all", pending = false;
 const CL = {};          // coin -> {p, c, h, l, v, s, d}
 let CLT = 0, CLlive = false;
 const KL = {};          // "BTC:1D" -> closes
@@ -312,8 +312,11 @@ function vNews(t) {
     }).join("") + "</div>";
 }
 function vX(t) {
-  return '<div class="card"><div class="h">' + ic("x") + '<span>X (Twitter)</span></div><div class="rg">' + XH.map(h => '<button data-x="' + h + '" class="' + (h === xcur ? "on" : "") + '">@' + h + "</button>").join("")
-    + '</div><div id="xbox" data-k="' + xcur + (isDark() ? "d" : "l") + '" style="margin-top:12px;min-height:200px"></div><a class="btn ghost" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box" href="https://x.com/' + xcur + '">' + t.xo + "</a></div>";
+  // X no longer shows embedded timelines to logged-out visitors (and a site can't detect the empty frame),
+  // so the tab links straight to each account in the X app instead.
+  return '<div class="card"><div class="h">' + ic("x") + "<span>X (Twitter)</span></div>"
+    + '<div class="mut" style="margin-bottom:6px">' + t.xn + "</div>"
+    + XH.map(h => '<a class="row" target="_blank" rel="noopener" style="text-decoration:none;color:inherit" href="https://x.com/' + h + '"><div class="av">' + ic("x") + '</div><div class="grow"><b>@' + h + '</b><span class="mut">' + t.xo + "</span></div><span>↗</span></a>").join("") + "</div>";
 }
 function vTg(t) {
   const d = TG[tgcur];
@@ -468,7 +471,6 @@ function render() {
     if (h !== last[id]) {
       el.innerHTML = h; last[id] = h;
       if (id === "mkt") mountChart();
-      if (id === "x" && cur === "x") loadX();
     }
   }
   if (CH && CH.theme !== isDark()) chartTheme();
@@ -482,7 +484,6 @@ function go(id) {
   const a = document.querySelector("nav .on"); if (a && a.scrollIntoView) a.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   window.scrollTo(0, 0);
   if (sec) { sec.classList.remove("anim"); void sec.offsetWidth; sec.classList.add("anim"); setTimeout(() => sec.classList.remove("anim"), 1500); }
-  if (id === "x") loadX();
   if (id === "sport") { loadSports(); loadScores(true); }
   if (id === "news") loadNews();
   if (id === "tg") loadTg(tgcur);
@@ -499,7 +500,6 @@ document.addEventListener("click", e => {
   else if ((b = g("nav button"))) go(b.dataset.s);
   else if ((b = g("[data-go]"))) go(b.dataset.go);
   else if ((b = g("[data-nc]"))) { ncat = b.dataset.nc; render(); }
-  else if ((b = g("[data-x]"))) { xcur = b.dataset.x; render(); }
   else if ((b = g("[data-ci]"))) { cint = b.dataset.ci; save("cint", cint); render(); loadCandles(); }
   else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadCandles(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   else if ((b = g("[data-sc]"))) { scat = b.dataset.sc; render(); }
@@ -741,24 +741,6 @@ async function loadAi() {
   aiBusy = false;
   if (d && d.report && d.report.headline) { AI[lg] = d; save("ai_" + lg, d); }
   render();
-}
-function loadX() {
-  const b = $("xbox"); if (!b) return;
-  b.innerHTML = '<div class="mut">' + T[L].xl + '</div><a class="twitter-timeline" data-height="560" data-dnt="true" data-chrome="noheader nofooter transparent" data-theme="' + (isDark() ? "dark" : "light") + '" href="https://twitter.com/' + xcur + '"></a>';
-  const tok = ++xt;
-  const ld = () => { const q = $("xbox"); if (q && window.twttr && window.twttr.widgets) window.twttr.widgets.load(q); };
-  if (window.twttr && window.twttr.widgets) ld();
-  else if (!$("twjs")) { const sc = document.createElement("script"); sc.id = "twjs"; sc.async = true; sc.src = "https://platform.twitter.com/widgets.js"; sc.onload = ld; document.head.appendChild(sc); }
-  else setTimeout(ld, 800);
-  // X often renders nothing for logged-out visitors (no iframe, or an empty one): fall back to direct links
-  setTimeout(() => {
-    if (tok !== xt) return;
-    const q = $("xbox"), f = q && q.querySelector("iframe");
-    if (q && (!f || f.offsetHeight < 150)) {
-      q.style.minHeight = "0";
-      q.innerHTML = '<div class="mut" style="margin-bottom:10px">' + T[L].xf + "</div>" + XH.map(h => '<a class="row" target="_blank" rel="noopener" style="text-decoration:none;color:inherit" href="https://x.com/' + h + '"><div class="av">' + ic("x") + '</div><div class="grow"><b>@' + h + "</b></div><span>↗</span></a>").join("");
-    }
-  }, 8000);
 }
 function refreshAll() {
   if (!navigator.onLine) return;
