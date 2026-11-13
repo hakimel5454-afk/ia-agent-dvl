@@ -83,11 +83,11 @@ function parseRss(xml, src, cat) {
   return out;
 }
 
-async function get(url, ms = 6000, accept = "*/*") {
+async function get(url, ms = 6000, accept = "*/*", extra = {}) {
   const ac = new AbortController();
   const to = setTimeout(() => ac.abort(), ms);
   try {
-    const r = await fetch(url, { signal: ac.signal, headers: { "User-Agent": UA, "Accept": accept } });
+    const r = await fetch(url, { signal: ac.signal, headers: { "User-Agent": UA, "Accept": accept, ...extra } });
     if (!r.ok) throw new Error("HTTP " + r.status);
     return r;
   } finally { clearTimeout(to); }
@@ -209,13 +209,49 @@ function parseCoin(j, lang) {
     }
   };
 }
-async function coin(sym, lang) {
+// Fallback when CoinGecko refuses requests from Cloudflare's shared IPs: CoinPaprika (free, no key)
+const CP_IDS = { BTC: "btc-bitcoin", ETH: "eth-ethereum", SOL: "sol-solana", BNB: "bnb-binance-coin", XRP: "xrp-xrp", DOGE: "doge-dogecoin", ADA: "ada-cardano", TON: "ton-toncoin" };
+function parsePaprika(c, t, sym) {
+  const q = (t && t.quotes && t.quotes.USD) || {}, l = c.links || {}, ext = c.links_extended || [];
+  const ex = type => (ext.find(x => x.type === type) || {}).url || null;
+  const first = a => (Array.isArray(a) ? a.find(Boolean) : a) || null;
+  return {
+    id: c.id, sym, name: c.name, image: "https://static.coinpaprika.com/coin/" + c.id + "/logo.png", rank: c.rank || null,
+    desc: dec(c.description || "").slice(0, 1500), descLang: "en", genesis: c.started_at || null,
+    categories: [c.type === "coin" ? "Coin" : c.type === "token" ? "Token" : null, c.development_status].filter(Boolean).slice(0, 2),
+    marketCap: q.market_cap || null, fdv: null, volume: q.volume_24h || null,
+    circulating: t ? t.circulating_supply || null : null, total: t ? t.total_supply || null : null, max: t ? t.max_supply || null : null,
+    ath: q.ath_price || null, athDate: q.ath_date || null, athChange: q.percent_from_price_ath != null ? q.percent_from_price_ath : null,
+    atl: null, atlDate: null,
+    ch7d: q.percent_change_7d != null ? q.percent_change_7d : null, ch30d: q.percent_change_30d != null ? q.percent_change_30d : null,
+    ch1y: q.percent_change_1y != null ? q.percent_change_1y : null,
+    links: { web: first(l.website), whitepaper: (c.whitepaper && c.whitepaper.link) || null, explorer: first(l.explorer), x: ex("twitter"), reddit: first(l.reddit) || ex("reddit"), github: first(l.source_code) || ex("source_code") },
+    src: "CoinPaprika"
+  };
+}
+async function coin(sym, lang, env) {
   const key = "coin:" + sym + ":" + lang;
   const c = cached(key, 6 * 60 * MIN);
-  if (c) return c;
-  const url = "https://api.coingecko.com/api/v3/coins/" + CG_IDS[sym] + "?localization=true&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false";
-  const j = await (await get(url, 8000, "application/json")).json();
-  return store(key, JSON.stringify(parseCoin(j, lang)));
+  if (c) return { body: c };
+  const errs = [];
+  try {
+    // an optional free CoinGecko "demo" key (secret COINGECKO_API_KEY) avoids the shared-IP rate limits
+    const hdr = env.COINGECKO_API_KEY ? { "x-cg-demo-api-key": env.COINGECKO_API_KEY } : {};
+    const url = "https://api.coingecko.com/api/v3/coins/" + CG_IDS[sym] + "?localization=true&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false";
+    const j = await (await get(url, 8000, "application/json", hdr)).json();
+    return { body: store(key, JSON.stringify({ ...parseCoin(j, lang), src: "CoinGecko" })) };
+  } catch (e) { errs.push("coingecko: " + e.message); }
+  try {
+    const base = "https://api.coinpaprika.com/v1/";
+    const [cj, tj] = await Promise.all([
+      get(base + "coins/" + CP_IDS[sym], 8000, "application/json").then(r => r.json()),
+      get(base + "tickers/" + CP_IDS[sym], 8000, "application/json").then(r => r.json()).catch(() => null)
+    ]);
+    return { body: store(key, JSON.stringify(parsePaprika(cj, tj, sym))) };
+  } catch (e) { errs.push("coinpaprika: " + e.message); }
+  const stale = mem[key]; // better an old profile than none
+  if (stale) return { body: stale.body };
+  return { status: 502, body: JSON.stringify({ error: "coin profile unavailable", detail: errs }) };
 }
 
 // ---------- /fng ----------
@@ -378,7 +414,8 @@ export default {
         case "/coin": {
           const sym = (u.searchParams.get("sym") || "").toUpperCase(), q = u.searchParams.get("lang");
           if (!CG_IDS[sym]) return reply(JSON.stringify({ error: "unknown coin" }), 400);
-          return reply(await coin(sym, ["ar", "fr", "en"].includes(q) ? q : "en"));
+          const r = await coin(sym, ["ar", "fr", "en"].includes(q) ? q : "en", env);
+          return reply(r.body, r.status || 200);
         }
         case "/fng":
           return reply(await fng());

@@ -326,7 +326,7 @@ function vProfile(t) {
       + '<p dir="auto">' + esc(paras[0]) + "</p>" + (paras.length > 1 ? "<details><summary>" + t.pMore + "</summary>" + paras.slice(1).map(x => '<p dir="auto">' + esc(x) + "</p>").join("") + "</details>" : "") + "</div>";
   }
   if (links.length) h += '<div class="h" style="margin:14px 0 8px">' + t.pLinks + '</div><div class="chips" style="flex-wrap:wrap">' + links.map(x => '<a class="chipl" target="_blank" rel="noopener" href="' + esc(x[1]) + '">' + esc(x[0]) + " ↗</a>").join("") + "</div>";
-  return h + '<div class="mut" style="margin-top:6px;font-size:11px">' + t.pSrc + "</div></div>";
+  return h + '<div class="mut" style="margin-top:6px;font-size:11px">' + t.pSrc.replace("CoinGecko", esc(d.src || "CoinGecko")) + "</div></div>";
 }
 function vNews(t) {
   if (!NW) return '<div class="card">' + hd("news", t.news, null, t) + '<div class="empty">' + (navigator.onLine ? t.loading : t.err) + "</div></div>";
