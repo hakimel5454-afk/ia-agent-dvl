@@ -287,13 +287,13 @@ function summary(t) {
   return t.sum(ltr(pctS(b.c)), NW ? todayNews() : 0, todayMatches().length);
 }
 function vMkt(t) {
-  const q = CL[sel], key = sel + ":" + rng, s = KL[key] || (rng === "1D" && q && q.s), kind = coinKind();
+  const q = CL[sel], kind = coinKind();
   const name = (COINS.find(c => c[0] === sel) || [sel, sel])[1];
   let top = '<div class="card">' + hd("btc", name + " · " + sel, kind, t, "coin");
   top += q && q.p ? '<div class="big ' + (q.d || (q.c >= 0 ? "up" : "dn")) + '">' + usd(q.p) + "</div>" + (q.c != null ? cv(q.c) : "") : '<div class="mut">' + t.loading + "</div>";
-  top += chart(s, 130, 1);
+  top += '<div id="cslot" class="cslot"></div>';
   if (q && q.h) top += '<div class="st"><div><small>' + t.hi + "</small>" + usd(q.h) + "</div><div><small>" + t.lo + "</small>" + usd(q.l) + "</div><div><small>" + t.vo + "</small>" + compact(q.v) + "</div></div>";
-  top += '<div class="rg" style="margin-top:14px">' + Object.keys(RANGES).map(k => '<button data-r="' + k + '" class="' + (k === rng ? "on" : "") + '">' + k + "</button>").join("") + "</div></div>";
+  top += '<div class="rg" style="margin-top:14px">' + Object.keys(CINT).map(k => '<button data-ci="' + k + '" class="' + (k === cint ? "on" : "") + '">' + k + "</button>").join("") + "</div></div>";
   const list = '<div class="card">' + hd("dash", t.cr, kind, t) + COINS.map(([k, n]) => {
     const d = CL[k] || {};
     return '<button class="row' + (k === sel ? " sel" : "") + '" data-coin="' + k + '"><div class="av">' + k.slice(0, 4) + '</div><div class="grow"><b>' + n + "</b>" + (d.c != null ? cv(d.c) : '<span class="mut">' + k + "</span>") + "</div>" + chart(d.s, 32) + '<b style="direction:ltr;min-width:84px;text-align:end">' + (d.p ? usd(d.p) : "–") + "</b></button>";
@@ -467,9 +467,11 @@ function render() {
     const h = VIEWS[id](t);
     if (h !== last[id]) {
       el.innerHTML = h; last[id] = h;
+      if (id === "mkt") mountChart();
       if (id === "x" && cur === "x") loadX();
     }
   }
+  if (CH && CH.theme !== isDark()) chartTheme();
   const nav = IDS.map((id, i) => '<button data-s="' + id + '" class="' + (id === cur ? "on" : "") + '">' + ic(NAV_IC[i]) + t.nav[i] + "</button>").join("");
   if (nav !== last.nav) { $("nav").innerHTML = nav; last.nav = nav; }
 }
@@ -484,7 +486,7 @@ function go(id) {
   if (id === "sport") { loadSports(); loadScores(true); }
   if (id === "news") loadNews();
   if (id === "tg") loadTg(tgcur);
-  if (id === "mkt") loadSeries(sel, rng);
+  if (id === "mkt") mountChart();
   if (id === "rep") loadAi();
 }
 
@@ -498,8 +500,8 @@ document.addEventListener("click", e => {
   else if ((b = g("[data-go]"))) go(b.dataset.go);
   else if ((b = g("[data-nc]"))) { ncat = b.dataset.nc; render(); }
   else if ((b = g("[data-x]"))) { xcur = b.dataset.x; render(); }
-  else if ((b = g("[data-r]"))) { rng = b.dataset.r; render(); loadSeries(sel, rng); }
-  else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadSeries(sel, rng); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  else if ((b = g("[data-ci]"))) { cint = b.dataset.ci; save("cint", cint); render(); loadCandles(); }
+  else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadCandles(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   else if ((b = g("[data-sc]"))) { scat = b.dataset.sc; render(); }
   else if ((b = g("[data-star]"))) {
     const id = b.dataset.star, m = SC && SC.matches.find(x => x.id === id);
@@ -558,7 +560,7 @@ async function refreshCoins() {
   if (!ok) return;
   CLT = Date.now(); CLlive = true;
   save("coins", { t: CLT, d: CL });
-  checkPriceAlerts(); render();
+  checkPriceAlerts(); render(); tickCandle();
 }
 let sparkT = 0;
 async function loadSparks() {
@@ -625,6 +627,111 @@ async function loadTg(ch) {
   else return;
   const keep = {}; tgch.forEach(k => { if (TG[k] && TG[k].posts) keep[k] = TG[k]; }); save("tg", keep);
   render();
+}
+/* ---------- candlestick chart (TradingView Lightweight Charts, Apache-2.0) ---------- */
+const LW_URL = "https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js";
+const CINT = { "15m": "15m", "1H": "1h", "4H": "4h", "1D": "1d", "1W": "1w" };
+let cint = CINT[raw("cint")] ? raw("cint") : "1H";
+let lwP = null, CH = null;
+const CK = {}; // "BTC:1H" -> { t, bars, vols }
+function loadLW() {
+  if (window.LightweightCharts) return Promise.resolve(true);
+  if (!lwP) lwP = new Promise(res => {
+    const sc = document.createElement("script");
+    sc.src = LW_URL; sc.async = true;
+    sc.onload = () => res(!!window.LightweightCharts);
+    sc.onerror = () => { lwP = null; res(false); };
+    document.head.appendChild(sc);
+  });
+  return lwP;
+}
+function cColors() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  return { text: v("--mut"), grid: v("--soft"), up: v("--up"), dn: v("--dn") };
+}
+function chartTheme() {
+  const c = cColors();
+  CH.chart.applyOptions({ layout: { textColor: c.text }, grid: { horzLines: { color: c.grid } } });
+  CH.candles.applyOptions({ upColor: c.up, downColor: c.dn, wickUpColor: c.up, wickDownColor: c.dn });
+  CH.theme = isDark();
+}
+function legend(bar) {
+  if (!CH || !bar) return;
+  const ch = (bar.close - bar.open) / bar.open * 100, f = v => usd(v).slice(1);
+  CH.legend.innerHTML = '<span class="mut">O</span> ' + f(bar.open) + ' <span class="mut">H</span> ' + f(bar.high) + ' <span class="mut">L</span> ' + f(bar.low) + ' <span class="mut">C</span> ' + f(bar.close) + ' <span class="' + (ch >= 0 ? "up" : "dn") + '">' + pctS(ch) + "</span>";
+}
+function makeChart() {
+  const el = document.createElement("div"), lg = document.createElement("div"), host = document.createElement("div");
+  el.className = "cbox"; lg.className = "clegend"; host.className = "chost";
+  el.append(lg, host);
+  const c = cColors();
+  const chart = LightweightCharts.createChart(host, {
+    autoSize: true,
+    layout: { background: { type: "solid", color: "transparent" }, textColor: c.text, fontFamily: "Inter, sans-serif", fontSize: 11 },
+    grid: { vertLines: { visible: false }, horzLines: { color: c.grid } },
+    rightPriceScale: { borderVisible: false },
+    timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, barSpacing: 6, rightOffset: 3 },
+    crosshair: { mode: 0 }
+  });
+  const candles = chart.addCandlestickSeries({ upColor: c.up, downColor: c.dn, wickUpColor: c.up, wickDownColor: c.dn, borderVisible: false });
+  candles.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.24 } });
+  const vols = chart.addHistogramSeries({ priceFormat: { type: "volume" }, priceScaleId: "", lastValueVisible: false, priceLineVisible: false });
+  vols.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+  CH = { el, legend: lg, chart, candles, vols, key: null, last: null, theme: isDark() };
+  chart.subscribeCrosshairMove(p => legend((p && p.time && p.seriesData.get(candles)) || CH.last));
+}
+async function mountChart() {
+  const slot = $("cslot");
+  if (!slot) return;
+  if (CH) {
+    if (CH.el.parentNode !== slot) slot.appendChild(CH.el);
+    if (CH.theme !== isDark()) chartTheme();
+    if (CH.key !== sel + ":" + cint) loadCandles();
+    return;
+  }
+  slot.innerHTML = '<div class="empty">' + T[L].loading + "</div>";
+  const ok = await loadLW();
+  const s2 = $("cslot");
+  if (!s2) return;
+  if (!ok) { s2.innerHTML = chart(KL[sel + ":1D"] || (CL[sel] && CL[sel].s), 130, 1); return; } // offline: simple line chart
+  if (!CH) makeChart();
+  s2.innerHTML = ""; s2.appendChild(CH.el);
+  loadCandles();
+}
+async function loadCandles(force) {
+  if (!CH) return;
+  const k = sel, iv = cint, key = k + ":" + iv, c = CK[key];
+  let fresh = c && Date.now() - c.t < MIN;
+  if (!c) CH.legend.innerHTML = '<span class="mut">' + T[L].loading + "</span>";
+  if (c && CH.key !== key) show(key, c);
+  if (fresh && !force) return;
+  const d = await bget("/api/v3/klines?symbol=" + k + "USDT&interval=" + CINT[iv] + "&limit=300");
+  if (!Array.isArray(d) || !d.length) { if (!c) CH.legend.innerHTML = '<span class="mut">' + T[L].err + "</span>"; return; }
+  const tz = -new Date().getTimezoneOffset() * 60, col = cColors();
+  const bars = d.map(x => ({ time: x[0] / 1000 + tz, open: +x[1], high: +x[2], low: +x[3], close: +x[4] }));
+  const vols = d.map((x, i) => ({ time: bars[i].time, value: +x[5], color: (bars[i].close >= bars[i].open ? col.up : col.dn) + "55" }));
+  CK[key] = { t: Date.now(), bars, vols };
+  if (sel + ":" + cint === key) show(key, CK[key]);
+}
+function show(key, c) {
+  const first = CH.key !== key, p = c.bars[c.bars.length - 1].close;
+  const prec = p >= 1000 ? 2 : p >= 1 ? 3 : 5;
+  CH.candles.applyOptions({ priceFormat: { type: "price", precision: prec, minMove: Math.pow(10, -prec) } });
+  CH.candles.setData(c.bars); CH.vols.setData(c.vols);
+  CH.key = key; CH.last = c.bars[c.bars.length - 1];
+  if (first) CH.chart.timeScale().scrollToRealTime();
+  legend(CH.last);
+}
+function tickCandle() {
+  // live price moves the last candle; a fresh batch is pulled once a minute while the chart is visible
+  if (!CH || !CH.last || cur !== "mkt" || CH.key !== sel + ":" + cint) return;
+  const p = CL[sel] && CL[sel].p;
+  if (!p) return;
+  const b = CH.last, nb = { time: b.time, open: b.open, high: Math.max(b.high, p), low: Math.min(b.low, p), close: p };
+  CH.candles.update(nb); CH.last = nb;
+  const c = CK[CH.key]; if (c) c.bars[c.bars.length - 1] = nb;
+  legend(nb);
+  if (c && Date.now() - c.t > MIN) loadCandles(true);
 }
 async function loadAi() {
   const lg = L, a = AI[lg];
