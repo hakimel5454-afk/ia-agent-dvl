@@ -1,5 +1,5 @@
 // Offline support: the app shell is cached; live data is cached by the app itself (localStorage).
-const CACHE = "dvl-v10";
+const CACHE = "dvl-v11";
 const SHELL = ["./", "index.html", "style.css", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -12,7 +12,7 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  const font = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
+  const font = /fonts\.(googleapis|gstatic)\.com$|^static\.coinpaprika\.com$/.test(url.hostname); // fonts + coin logos: cached for offline
   if (url.origin !== location.origin && !font) return; // APIs go straight to the network
   // network first (fresh after updates), cache as fallback when offline
   // "no-cache" makes the browser revalidate with the server, so a new release shows up on the next

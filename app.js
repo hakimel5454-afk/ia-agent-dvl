@@ -6,6 +6,8 @@
 const WORKER = "https://ia-agent-dvl.hakimel5454.workers.dev";
 const HOSTS = ["https://data-api.binance.vision", "https://api.binance.com"];
 const COINS = [["BTC", "Bitcoin"], ["ETH", "Ethereum"], ["SOL", "Solana"], ["BNB", "BNB"], ["XRP", "XRP"], ["DOGE", "Dogecoin"], ["ADA", "Cardano"], ["TON", "Toncoin"]];
+// coin logos from CoinPaprika's public image CDN (the same ids the worker uses for profiles)
+const LOGO_IDS = { BTC: "btc-bitcoin", ETH: "eth-ethereum", SOL: "sol-solana", BNB: "bnb-binance-coin", XRP: "xrp-xrp", DOGE: "doge-dogecoin", ADA: "ada-cardano", TON: "ton-toncoin" };
 const IDS = ["dash", "mkt", "news", "x", "tg", "sport", "alert", "rep"];
 const NAV_IC = ["dash", "btc", "globe", "x", "tg", "sport", "bell", "rep"];
 const RANGES = { "1D": ["1h", 24], "1W": ["6h", 28], "1M": ["1d", 30], "1Y": ["1w", 52] };
@@ -146,6 +148,12 @@ function agoTs(ts, t) {
 function isDark() { const r = document.documentElement; return r.dataset.theme === "dark" || (!r.dataset.theme && matchMedia("(prefers-color-scheme:dark)").matches); }
 function badge(kind, t) { return kind ? '<span class="demo">' + (kind === "live" ? t.live : t.saved) + "</span>" : ""; }
 function hd(i, txt, kind, t, cls) { return '<div class="h">' + ic(i, cls) + "<span>" + txt + "</span>" + badge(kind, t) + "</div>"; }
+// coin logo; falls back to the ticker in a box when the image can't load (offline, blocked)
+function logo(k, size) {
+  const id = LOGO_IDS[k], box = '<div class="av"' + (size ? ' style="width:' + size + "px;height:" + size + 'px"' : "") + ">" + k.slice(0, 4) + "</div>";
+  if (!id) return box;
+  return '<img class="logo" src="https://static.coinpaprika.com/coin/' + id + '/logo.png" alt="' + k + '" width="' + (size || 38) + '" height="' + (size || 38) + '" loading="lazy" onerror="this.outerHTML=\'' + box.replace(/"/g, "&quot;") + '\'">';
+}
 function chart(a, h, area) {
   if (!a || a.length < 2) return "";
   const mn = Math.min.apply(null, a), mx = Math.max.apply(null, a), sp = mx - mn || 1, w = 320;
@@ -291,14 +299,14 @@ function summary(t) {
 function vMkt(t) {
   const q = CL[sel], kind = coinKind();
   const name = (COINS.find(c => c[0] === sel) || [sel, sel])[1];
-  let top = '<div class="card">' + hd("btc", name + " · " + sel, kind, t, "coin");
+  let top = '<div class="card"><div class="h">' + logo(sel, 22) + "<span>" + name + " · " + sel + "</span>" + badge(kind, t) + "</div>";
   top += q && q.p ? '<div class="big ' + (q.d || (q.c >= 0 ? "up" : "dn")) + '">' + usd(q.p) + "</div>" + (q.c != null ? cv(q.c) : "") : '<div class="mut">' + t.loading + "</div>";
   top += '<div id="cslot" class="cslot"></div>';
   if (q && q.h) top += '<div class="st"><div><small>' + t.hi + "</small>" + usd(q.h) + "</div><div><small>" + t.lo + "</small>" + usd(q.l) + "</div><div><small>" + t.vo + "</small>" + compact(q.v) + "</div></div>";
   top += '<div class="rg" style="margin-top:14px">' + Object.keys(CINT).map(k => '<button data-ci="' + k + '" class="' + (k === cint ? "on" : "") + '">' + k + "</button>").join("") + "</div></div>";
   const list = '<div class="card">' + hd("dash", t.cr, kind, t) + COINS.map(([k, n]) => {
     const d = CL[k] || {};
-    return '<button class="row' + (k === sel ? " sel" : "") + '" data-coin="' + k + '"><div class="av">' + k.slice(0, 4) + '</div><div class="grow"><b>' + n + "</b>" + (d.c != null ? cv(d.c) : '<span class="mut">' + k + "</span>") + "</div>" + chart(d.s, 32) + '<b style="direction:ltr;min-width:84px;text-align:end">' + (d.p ? usd(d.p) : "–") + "</b></button>";
+    return '<button class="row' + (k === sel ? " sel" : "") + '" data-coin="' + k + '">' + logo(k) + '<div class="grow"><b>' + n + "</b>" + (d.c != null ? cv(d.c) : '<span class="mut">' + k + "</span>") + "</div>" + chart(d.s, 32) + '<b style="direction:ltr;min-width:84px;text-align:end">' + (d.p ? usd(d.p) : "–") + "</b></button>";
   }).join("") + "</div>";
   return top + vProfile(t) + list;
 }
@@ -312,7 +320,7 @@ function vProfile(t) {
   const cell = (k, v, sub) => '<div><small>' + k + "</small>" + v + (sub ? '<span class="mut" style="display:block;font:500 10px Inter,sans-serif">' + sub + "</span>" : "") + "</div>";
   const lk = d.links || {}, links = [[t.pWeb, lk.web], [t.pWp, lk.whitepaper], [t.pExp, lk.explorer], ["X", lk.x], ["Reddit", lk.reddit], ["GitHub", lk.github]]
     .filter(x => x[1] && /^https?:\/\//.test(x[1]));
-  let h = '<div class="card pf"><div class="pfh">' + (d.image && /^https:\/\//.test(d.image) ? '<img src="' + esc(d.image) + '" alt="" width="44" height="44" loading="lazy" onerror="this.remove()">' : '<div class="av">' + esc(sel) + "</div>")
+  let h = '<div class="card pf"><div class="pfh">' + (d.image && /^https:\/\//.test(d.image) ? '<img class="logo" src="' + esc(d.image) + '" alt="" width="44" height="44" loading="lazy" onerror="this.remove()">' : logo(sel, 44))
     + '<div class="grow"><b>' + esc(d.name) + ' <span class="mut">' + esc(d.sym) + "</span></b>"
     + (d.rank ? '<span class="chip">' + t.pRank + " " + ltr("#" + d.rank) + "</span>" : "") + (d.categories || []).slice(0, 2).map(x => '<span class="chip">' + esc(x) + "</span>").join("") + "</div></div>";
   h += '<div class="pfg">' + cell(t.pCap, money(d.marketCap)) + cell(t.pVol, money(d.volume)) + cell(t.pFdv, money(d.fdv))
@@ -412,7 +420,7 @@ function vAlert(t) {
     + '<button class="btn" id="aadd">' + t.add + "</button>";
   h += alerts.length ? '<div style="margin-top:10px">' + alerts.map(a => {
     const p = CL[a.k] && CL[a.k].p;
-    return '<div class="row"><div class="av">' + a.k.slice(0, 4) + '</div><div class="grow"><b dir="ltr" style="text-align:start">' + a.k + " " + (a.dir === "up" ? "≥" : "≤") + " " + usd(a.v) + '</b><span class="mut">' + (a.on ? t.active : t.fired + " · " + agoTs(a.fired, T[L])) + (p ? " · " + usd(p) : "") + "</span></div>"
+    return '<div class="row">' + logo(a.k) + '<div class="grow"><b dir="ltr" style="text-align:start">' + a.k + " " + (a.dir === "up" ? "≥" : "≤") + " " + usd(a.v) + '</b><span class="mut">' + (a.on ? t.active : t.fired + " · " + agoTs(a.fired, T[L])) + (p ? " · " + usd(p) : "") + "</span></div>"
       + (a.on ? "" : '<button class="btn ghost" data-rearm="' + a.id + '" style="width:auto;margin:0;padding:6px 10px;font-size:12px">' + t.rearm + "</button>")
       + '<button class="x" data-adel="' + a.id + '" aria-label="delete">×</button></div>';
   }).join("") + "</div>" : '<div class="empty">' + t.none + "</div>";
