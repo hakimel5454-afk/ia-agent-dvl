@@ -167,7 +167,8 @@ const CL = {};          // coin -> {p, c, h, l, v, s, d}
 let CLT = 0, CLlive = false;
 const KL = {};          // "BTC:1D" -> closes
 let FNG = load("fng");
-let PF = load("pf") || {}; // coin profiles: "BTC:ar" -> { t, d }
+let PF = load("pf2") || {}; // coin profiles: "BTC:ar" -> { t, d } ("pf" held bad entries from before the worker had /coin)
+try { localStorage.removeItem("pf"); } catch (e) { }
 let NW = null, NWL = "", NWT = 0;
 let SP = null, SPM = {}, SPT = 0;      // odds
 let SC = load("scores"), SCT = 0;      // live scores
@@ -763,11 +764,12 @@ function tickCandle() {
 async function loadProfile() {
   const k = sel, lg = L, key = k + ":" + lg, c = PF[key];
   if (c && c.d && !c.d.err && Date.now() - c.t < 6 * 60 * MIN) return;
+  if (c && c.d && c.d.err && Date.now() - c.t < MIN) return; // retry failures after a minute
   const d = await jget(WORKER + "/coin?sym=" + k + "&lang=" + lg, 15000);
-  if (d && d.name) PF[key] = { t: Date.now(), d };
+  if (d && d.id && d.sym === k && d.name) PF[key] = { t: Date.now(), d }; // a real profile, not another route's reply
   else if (!c || !c.d || c.d.err) PF[key] = { t: Date.now(), d: { err: true } };
   else return;
-  const keep = {}; for (const x in PF) if (PF[x].d && !PF[x].d.err) keep[x] = PF[x]; save("pf", keep);
+  const keep = {}; for (const x in PF) if (PF[x].d && !PF[x].d.err) keep[x] = PF[x]; save("pf2", keep);
   render();
 }
 async function loadAi() {
