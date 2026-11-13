@@ -643,7 +643,15 @@ function loadX() {
   if (window.twttr && window.twttr.widgets) ld();
   else if (!$("twjs")) { const sc = document.createElement("script"); sc.id = "twjs"; sc.async = true; sc.src = "https://platform.twitter.com/widgets.js"; sc.onload = ld; document.head.appendChild(sc); }
   else setTimeout(ld, 800);
-  setTimeout(() => { if (tok !== xt) return; const q = $("xbox"); if (q && !q.querySelector("iframe")) q.innerHTML = '<div class="mut">' + T[L].xf + "</div>"; }, 9000);
+  // X often renders nothing for logged-out visitors (no iframe, or an empty one): fall back to direct links
+  setTimeout(() => {
+    if (tok !== xt) return;
+    const q = $("xbox"), f = q && q.querySelector("iframe");
+    if (q && (!f || f.offsetHeight < 150)) {
+      q.style.minHeight = "0";
+      q.innerHTML = '<div class="mut" style="margin-bottom:10px">' + T[L].xf + "</div>" + XH.map(h => '<a class="row" target="_blank" rel="noopener" style="text-decoration:none;color:inherit" href="https://x.com/' + h + '"><div class="av">' + ic("x") + '</div><div class="grow"><b>@' + h + "</b></div><span>↗</span></a>").join("");
+    }
+  }, 8000);
 }
 function refreshAll() {
   if (!navigator.onLine) return;
