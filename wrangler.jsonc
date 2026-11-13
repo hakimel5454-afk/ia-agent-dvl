@@ -1,5 +1,7 @@
 {
   "name": "dvl-odds",
   "main": "index.js",
-  "compatibility_date": "2025-11-01"
+  "compatibility_date": "2025-11-01",
+  // needed by the Anthropic SDK (/report)
+  "compatibility_flags": ["nodejs_compat"]
 }

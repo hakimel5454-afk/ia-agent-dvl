@@ -5,6 +5,9 @@
 //   /scores               live scores & today's results from ESPN (free, cached 45 s)
 //   /fng                  crypto Fear & Greed index (cached 30 min)
 //   /tg?ch=<channel>      latest posts of a public Telegram channel (cached 5 min)
+//   /report?lang=ar|fr|en daily report written by Claude from the live data (needs ANTHROPIC_API_KEY, cached 3 h)
+
+import Anthropic from "@anthropic-ai/sdk";
 
 const ORIGINS = ["https://hakimel5454-afk.github.io"];
 
@@ -216,6 +219,102 @@ async function tg(ch) {
   return store(key, JSON.stringify(data));
 }
 
+// ---------- /report (AI) ----------
+const REPORT_TTL = 3 * 60 * MIN; // one Claude call per language every 3 hours at most
+const LANG_NAME = { ar: "Modern Standard Arabic", fr: "French", en: "English" };
+const REPORT_SCHEMA = {
+  type: "object",
+  properties: {
+    headline: { type: "string", description: "One sentence: the most important takeaway of the day." },
+    market: { type: "string", description: "2-3 sentences on crypto prices, 24h moves and market sentiment." },
+    news: { type: "string", description: "2-3 sentences summarising the main headlines." },
+    sports: { type: "string", description: "2-3 sentences on today's football: live/finished results and key upcoming matches." },
+    watch: { type: "array", items: { type: "string" }, description: "Up to 3 short items worth following later today." }
+  },
+  required: ["headline", "market", "news", "sports", "watch"],
+  additionalProperties: false
+};
+const SYSTEM = "You write the daily briefing of IA AGENT DVL, a personal monitoring dashboard. " +
+  "Use only the facts in the JSON data you are given; never invent prices, scores, events or sources. " +
+  "If a section has no data, say so in one short sentence. Be concise and neutral. " +
+  "Do not give investment or betting advice: betting odds may only be described as how likely an outcome looks. " +
+  "Keep numbers, tickers and team names exactly as in the data.";
+
+async function prices() {
+  const syms = ["BTC", "ETH", "SOL", "BNB", "XRP"];
+  try {
+    const q = encodeURIComponent(JSON.stringify(syms.map(s => s + "USDT")));
+    const d = await (await get("https://data-api.binance.vision/api/v3/ticker/24hr?symbols=" + q, 6000, "application/json")).json();
+    return d.map(o => ({ coin: o.symbol.replace(/USDT$/, ""), usd: +(+o.lastPrice).toFixed(4), change24h_pct: +(+o.priceChangePercent).toFixed(2) }));
+  } catch (e) {
+    const ids = { bitcoin: "BTC", ethereum: "ETH", solana: "SOL", binancecoin: "BNB", ripple: "XRP" };
+    const d = await (await get("https://api.coingecko.com/api/v3/simple/price?ids=" + Object.keys(ids).join(",") + "&vs_currencies=usd&include_24hr_change=true", 6000, "application/json")).json();
+    return Object.keys(ids).filter(k => d[k]).map(k => ({ coin: ids[k], usd: d[k].usd, change24h_pct: +(+d[k].usd_24h_change).toFixed(2) }));
+  }
+}
+async function reportData(lang, env) {
+  const safe = p => p.catch(() => null);
+  const [px, fg, nw, sc, od] = await Promise.all([
+    safe(prices()), safe(fng().then(JSON.parse)), safe(news(lang).then(JSON.parse)),
+    safe(scores().then(JSON.parse)), safe(matches(env).then(r => JSON.parse(r.body)))
+  ]);
+  const today = new Date().toISOString().slice(0, 10);
+  const soon = Date.now() + 36 * 3600 * 1000;
+  return {
+    date_utc: new Date().toISOString(),
+    crypto_prices: px,
+    fear_greed: fg && { value: fg.value, label: fg.label },
+    headlines: nw && nw.items ? nw.items.slice(0, 15).map(x => ({ title: x.t, source: x.s, category: x.c })) : null,
+    football_scores: sc && sc.matches ? sc.matches.filter(m => m.state === "in" || m.time.slice(0, 10) === today)
+      .map(m => ({ league: m.league, home: m.home, away: m.away, score: m.state === "pre" ? null : m.hs + "-" + m.as, status: m.state === "in" ? "live " + m.detail : m.state === "post" ? "finished" : "kick-off " + m.time })) : null,
+    upcoming_odds: od && od.matches ? od.matches.filter(m => Date.parse(m.time) < soon && Date.parse(m.time) > Date.now())
+      .slice(0, 8).map(m => ({ league: m.league, home: m.home, away: m.away, kickoff: m.time, decimal_odds_1X2: m.odds })) : null
+  };
+}
+async function writeReport(lang, env) {
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const data = await reportData(lang, env);
+  const response = await client.beta.messages.create({
+    model: "claude-opus-5-5",
+    max_tokens: 16000,
+    output_config: { effort: "low", format: { type: "json_schema", schema: REPORT_SCHEMA } },
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    system: SYSTEM,
+    messages: [{
+      role: "user",
+      content: "Write today's briefing in " + LANG_NAME[lang] + ". Live data:\n" + JSON.stringify(data)
+    }]
+  });
+  if (response.stop_reason === "refusal") throw new Error("refused");
+  const text = response.content.filter(b => b.type === "text").map(b => b.text).join("");
+  const r = JSON.parse(text);
+  r.watch = (r.watch || []).slice(0, 3);
+  return JSON.stringify({ lang, generated: new Date().toISOString(), model: response.model, report: r });
+}
+async function report(lang, env) {
+  const key = "report:" + lang;
+  const m = cached(key, REPORT_TTL);
+  if (m) return { body: m };
+  const cache = caches.default, ck = new Request("https://dvl-report.internal/" + lang);
+  const hit = await cache.match(ck);
+  if (hit) return { body: store(key, await hit.text()) };
+  if (!env.ANTHROPIC_API_KEY) return { status: 501, body: JSON.stringify({ error: "missing ANTHROPIC_API_KEY" }) };
+  try {
+    const body = await writeReport(lang, env);
+    await cache.put(ck, new Response(body, { headers: { "Cache-Control": "max-age=" + REPORT_TTL / 1000 } }));
+    return { body: store(key, body) };
+  } catch (e) {
+    let error = "report failed", status = 502;
+    if (e instanceof Anthropic.AuthenticationError) { error = "invalid ANTHROPIC_API_KEY"; status = 500; }
+    else if (e instanceof Anthropic.RateLimitError) { error = "rate limited"; status = 503; }
+    else if (e instanceof Anthropic.APIConnectionError) error = "Claude API unreachable";
+    else if (e instanceof Anthropic.APIError) error = "Claude API error " + e.status;
+    else if (e instanceof SyntaxError) error = "bad report format";
+    return { status, body: JSON.stringify({ error }) };
+  }
+}
+
 // ---------- router ----------
 export default {
   async fetch(req, env) {
@@ -246,8 +345,13 @@ export default {
           if (!/^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(ch)) return reply(JSON.stringify({ error: "bad channel" }), 400);
           return reply(await tg(ch));
         }
+        case "/report": {
+          const q = u.searchParams.get("lang");
+          const r = await report(["ar", "fr", "en"].includes(q) ? q : "en", env);
+          return reply(r.body, r.status || 200);
+        }
         default:
-          return reply(JSON.stringify({ ok: true, name: "IA AGENT DVL", routes: ["/news", "/matches", "/scores", "/fng", "/tg"] }));
+          return reply(JSON.stringify({ ok: true, name: "IA AGENT DVL", routes: ["/news", "/matches", "/scores", "/fng", "/tg", "/report"] }));
       }
     } catch (e) {
       return reply(JSON.stringify({ error: "fetch failed" }), 502);

@@ -18,8 +18,10 @@
 - `/scores`: النتائج المباشرة من ESPN، مجانًا ودون مفتاح (أوروبا + السعودية + مصر + المغرب + الإمارات + قطر)
 - `/fng`: مؤشر الخوف والطمع
 - `/tg?ch=اسم_القناة`: آخر منشورات قناة Telegram عامة
+- `/report?lang=ar|fr|en`: التقرير اليومي يكتبه Claude من البيانات الحية. يحتاج السرّ `ANTHROPIC_API_KEY`، ويُحفظ 3 ساعات لكل لغة. بدونه يعرض التطبيق التقرير التلقائي.
 
 ## النشر
 1. الواجهة: GitHub Pages ينشر الملفات تلقائيًا.
-2. الخادم: `npx wrangler deploy` ثم `npx wrangler secret put ODDS_API_KEY`.
+2. الخادم: `npm install` ثم `npx wrangler deploy`، ثم أضف الأسرار:
+   `npx wrangler secret put ODDS_API_KEY` و`npx wrangler secret put ANTHROPIC_API_KEY`.
    تأكد أن رابط الخادم يطابق `WORKER` في أول `app.js`.

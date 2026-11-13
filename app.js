@@ -52,7 +52,7 @@ const T = {
     note: "تعمل التنبيهات ما دام التطبيق مفتوحًا. على iPhone أضف التطبيق إلى الشاشة الرئيسية (iOS 16.4 أو أحدث) لتظهر كإشعارات.",
     theme: "المظهر", tog: "تبديل الوضع الفاتح/الداكن",
     nUp: (c, p) => c + " تجاوز " + p, nDn: (c, p) => c + " نزل تحت " + p, nKick: "بدأت المباراة", nGoal: "⚽ هدف!", nEnd: "انتهت المباراة",
-    rp: "التقرير اليومي", rMkt: "السوق", rNews: "الأخبار", rSport: "الرياضة", rAl: "التنبيهات", share: "مشاركة التقرير", copied: "تم نسخ التقرير ✓", gen: "يُنشأ تلقائيًا من البيانات الحية",
+    rp: "التقرير اليومي", rMkt: "السوق", rNews: "الأخبار", rSport: "الرياضة", rAl: "التنبيهات", share: "مشاركة التقرير", copied: "تم نسخ التقرير ✓", gen: "يُنشأ تلقائيًا من البيانات الحية", aiBy: "كتبه الذكاء الاصطناعي (Claude)", watch: "للمتابعة اليوم", aiWait: "جارٍ كتابة التقرير بالذكاء الاصطناعي…",
     rM: (p, c, b, w) => "البيتكوين عند " + p + " (" + c + " خلال 24 ساعة). الأفضل أداءً " + b + "، والأضعف " + w + ".",
     rF: (v, l) => "مؤشر الخوف والطمع عند " + v + " (" + l + ").",
     rN: n => n + " خبرًا منذ بداية اليوم. أبرز العناوين:",
@@ -80,7 +80,7 @@ const T = {
     note: "Les alertes fonctionnent tant que l’app est ouverte. Sur iPhone, ajoutez l’app à l’écran d’accueil (iOS 16.4+) pour recevoir des notifications.",
     theme: "Apparence", tog: "Basculer clair/sombre",
     nUp: (c, p) => c + " au-dessus de " + p, nDn: (c, p) => c + " sous " + p, nKick: "Coup d’envoi", nGoal: "⚽ But !", nEnd: "Fin du match",
-    rp: "Rapport quotidien", rMkt: "Marché", rNews: "Actualités", rSport: "Sport", rAl: "Alertes", share: "Partager le rapport", copied: "Rapport copié ✓", gen: "Généré automatiquement à partir des données en direct",
+    rp: "Rapport quotidien", rMkt: "Marché", rNews: "Actualités", rSport: "Sport", rAl: "Alertes", share: "Partager le rapport", copied: "Rapport copié ✓", gen: "Généré automatiquement à partir des données en direct", aiBy: "Rédigé par l’IA (Claude)", watch: "À suivre aujourd’hui", aiWait: "L’IA rédige le rapport…",
     rM: (p, c, b, w) => "Le Bitcoin est à " + p + " (" + c + " sur 24 h). Meilleure performance : " + b + ", plus faible : " + w + ".",
     rF: (v, l) => "Indice Peur & Cupidité : " + v + " (" + l + ").",
     rN: n => n + " articles depuis ce matin. À la une :",
@@ -108,7 +108,7 @@ const T = {
     note: "Alerts work while the app is open. On iPhone, add the app to your Home Screen (iOS 16.4+) to get them as notifications.",
     theme: "Appearance", tog: "Toggle light/dark",
     nUp: (c, p) => c + " rose above " + p, nDn: (c, p) => c + " fell below " + p, nKick: "Kick-off", nGoal: "⚽ Goal!", nEnd: "Full time",
-    rp: "Daily report", rMkt: "Market", rNews: "News", rSport: "Sports", rAl: "Alerts", share: "Share report", copied: "Report copied ✓", gen: "Generated automatically from live data",
+    rp: "Daily report", rMkt: "Market", rNews: "News", rSport: "Sports", rAl: "Alerts", share: "Share report", copied: "Report copied ✓", gen: "Generated automatically from live data", aiBy: "Written by AI (Claude)", watch: "Worth watching today", aiWait: "AI is writing the report…",
     rM: (p, c, b, w) => "Bitcoin is at " + p + " (" + c + " over 24h). Best performer: " + b + ", weakest: " + w + ".",
     rF: (v, l) => "Fear & Greed index at " + v + " (" + l + ").",
     rN: n => n + " stories since this morning. Top headlines:",
@@ -174,6 +174,8 @@ let TG = load("tg") || {};
 let tgch = load("tgch"); if (!Array.isArray(tgch) || !tgch.length) tgch = TG_DEFAULT.slice();
 let tgcur = tgch[0];
 let alerts = load("alerts") || [];
+let AI = {}, aiBusy = false; // AI report per language
+["ar", "fr", "en"].forEach(l => { const a = load("ai_" + l); if (a && a.report) AI[l] = a; });
 let stars = load("stars") || {};
 let opts = load("aopts"); if (!Array.isArray(opts) || opts.length !== 3) opts = [true, true, true];
 
@@ -276,7 +278,10 @@ function vDash(t) {
     + '<button class="card tile" data-go="sport"><span class="mut">' + ic("sport") + t.tM + '</span><span class="n">' + tm.length + "</span>" + (lv ? '<span class="live">' + lv + " " + t.tL + "</span>" : "") + "</button></div>"
     + '<div class="card rep">' + hd("rep", t.rp, null, t) + "<p>" + esc(summary(t)) + '</p><button class="btn ghost" data-go="rep">' + t.nav[7] + "</button></div>";
 }
+function aiFresh() { const a = AI[L]; return a && Date.now() - Date.parse(a.generated) < 12 * 60 * MIN ? a : null; }
 function summary(t) {
+  const a = aiFresh();
+  if (a) return a.report.headline;
   const b = CL.BTC;
   if (!b || b.c == null) return t.rNone;
   return t.sum(ltr(pctS(b.c)), NW ? todayNews() : 0, todayMatches().length);
@@ -411,14 +416,34 @@ function reportData(t) {
 }
 function dateStr() { return new Date().toLocaleDateString(LC(), { weekday: "long", day: "numeric", month: "long" }); }
 function reportText(t) {
+  const a = aiFresh();
+  if (a) {
+    const r = a.report, li = reportData(t);
+    return "IA AGENT DVL · " + t.rp + "\n" + dateStr() + "\n\n" + r.headline + "\n\n▪ " + t.rMkt + "\n" + r.market + "\n\n▪ " + t.rNews + "\n" + r.news + "\n\n▪ " + t.rSport + "\n" + r.sports
+      + (r.watch.length ? "\n\n▪ " + t.watch + "\n" + r.watch.map(x => "• " + x).join("\n") : "") + "\n\n" + t.aiBy;
+  }
   return "IA AGENT DVL · " + t.rp + "\n" + dateStr() + "\n\n" + reportData(t).map(([h, ps, li]) => "▪ " + h + "\n" + (ps.length ? ps.join(" ") : t.rNone) + (li.length ? "\n" + li.map(x => "• " + x.text).join("\n") : "")).join("\n\n");
 }
+function vRepAi(t, a) {
+  const r = a.report, d = reportData(t), lists = {};
+  d.forEach(([h, , li]) => { lists[h] = li; });
+  const ul = li => li && li.length ? "<ul>" + li.map(x => '<li dir="auto">' + (x.link ? '<a href="' + esc(x.link) + '" target="_blank" rel="noopener">' + esc(x.text) + "</a>" : esc(x.text)) + "</li>").join("") + "</ul>" : "";
+  const sec = (h, txt, li) => '<div class="row"><h3 style="margin:0">' + h + '</h3><p style="font-size:14px" dir="auto">' + esc(txt) + "</p>" + ul(li) + "</div>";
+  const al = d.find(x => x[0] === t.rAl);
+  return '<div class="card inv rep">' + hd("rep", t.rp, null, t) + '<div style="font:700 20px Inter,\'IBM Plex Sans Arabic\',sans-serif">' + dateStr() + '</div><p style="opacity:.85;font-size:16px;font-weight:600" dir="auto">' + esc(r.headline) + "</p></div>"
+    + '<div class="card rep">' + sec(t.rMkt, r.market) + sec(t.rNews, r.news, lists[t.rNews]) + sec(t.rSport, r.sports, lists[t.rSport])
+    + (r.watch.length ? '<div class="row"><h3 style="margin:0">' + t.watch + "</h3>" + ul(r.watch.map(x => ({ text: x }))) + "</div>" : "")
+    + sec(t.rAl, al ? al[1].join(" ") : "")
+    + '<button class="btn" id="share">' + t.share + '</button><div class="mut" style="margin-top:10px">✨ ' + t.aiBy + " · " + hm(a.generated) + "</div></div>";
+}
 function vRep(t) {
+  const a = aiFresh();
+  if (a) return vRepAi(t, a);
   const d = reportData(t);
   return '<div class="card inv rep">' + hd("rep", t.rp, null, t) + '<div style="font:700 20px Inter,\'IBM Plex Sans Arabic\',sans-serif">' + dateStr() + '</div><p style="opacity:.8">' + esc(summary(t)) + "</p></div>"
     + '<div class="card rep">' + d.map(([h, ps, li]) => '<div class="row"><h3 style="margin:0">' + h + '</h3><p style="font-size:14px">' + esc(ps.length ? ps.join(" ") : t.rNone) + "</p>"
       + (li.length ? "<ul>" + li.map(x => '<li dir="auto">' + (x.link ? '<a href="' + esc(x.link) + '" target="_blank" rel="noopener">' + esc(x.text) + "</a>" : esc(x.text)) + "</li>").join("") + "</ul>" : "") + "</div>").join("")
-    + '<button class="btn" id="share">' + t.share + '</button><div class="mut" style="margin-top:10px">' + t.gen + "</div></div>";
+    + '<button class="btn" id="share">' + t.share + '</button><div class="mut" style="margin-top:10px">' + (aiBusy ? t.aiWait : t.gen) + "</div></div>";
 }
 const VIEWS = { dash: vDash, mkt: vMkt, news: vNews, x: vX, tg: vTg, sport: vSport, alert: vAlert, rep: vRep };
 
@@ -460,6 +485,7 @@ function go(id) {
   if (id === "news") loadNews();
   if (id === "tg") loadTg(tgcur);
   if (id === "mkt") loadSeries(sel, rng);
+  if (id === "rep") loadAi();
 }
 
 /* ---------- events ---------- */
@@ -467,7 +493,7 @@ document.addEventListener("focusout", () => setTimeout(() => { if (pending && !t
 document.addEventListener("click", e => {
   const g = s => e.target.closest(s); let b;
   const t = T[L];
-  if ((b = g("#lg button"))) { L = b.dataset.l; save("lang", L); render(); loadNews(true); }
+  if ((b = g("#lg button"))) { L = b.dataset.l; save("lang", L); render(); loadNews(true); loadAi(); }
   else if ((b = g("nav button"))) go(b.dataset.s);
   else if ((b = g("[data-go]"))) go(b.dataset.go);
   else if ((b = g("[data-nc]"))) { ncat = b.dataset.nc; render(); }
@@ -600,6 +626,15 @@ async function loadTg(ch) {
   const keep = {}; tgch.forEach(k => { if (TG[k] && TG[k].posts) keep[k] = TG[k]; }); save("tg", keep);
   render();
 }
+async function loadAi() {
+  const lg = L, a = AI[lg];
+  if (aiBusy || (a && Date.now() - Date.parse(a.generated) < 3 * 60 * MIN)) return;
+  aiBusy = true; render();
+  const d = await jget(WORKER + "/report?lang=" + lg, 90000);
+  aiBusy = false;
+  if (d && d.report && d.report.headline) { AI[lg] = d; save("ai_" + lg, d); }
+  render();
+}
 function loadX() {
   const b = $("xbox"); if (!b) return;
   b.innerHTML = '<div class="mut">' + T[L].xl + '</div><a class="twitter-timeline" data-height="560" data-dnt="true" data-chrome="noheader nofooter transparent" data-theme="' + (isDark() ? "dark" : "light") + '" href="https://twitter.com/' + xcur + '"></a>';
@@ -612,7 +647,7 @@ function loadX() {
 }
 function refreshAll() {
   if (!navigator.onLine) return;
-  refreshCoins(); loadSparks(); loadFng(); loadNews(); loadSports(); loadScores();
+  refreshCoins(); loadSparks(); loadFng(); loadNews(); loadSports(); loadScores(); loadAi();
   if (cur === "tg") loadTg(tgcur);
 }
 
