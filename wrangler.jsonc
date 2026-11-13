@@ -1,5 +1,5 @@
 {
-  "name": "dvl-odds",
+  "name": "ia-agent-dvl",
   "main": "index.js",
   "compatibility_date": "2025-11-01",
   // needed by the Anthropic SDK (/report)
