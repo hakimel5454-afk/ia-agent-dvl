@@ -42,7 +42,7 @@ const T = {
     tA: "تنبيهات نشطة", tN: "أخبار اليوم", tM: "مباريات اليوم", tL: "مباشر الآن",
     news: "أخبار العالم", nc: ["الكل", "عالمي", "اقتصاد", "تقنية", "كريبتو"],
     xo: "فتح الحساب على X", xn: "لم يعد X يسمح بعرض المنشورات داخل المواقع للزوار. اضغط على الحساب لفتحه في تطبيق X.", xl: "جارٍ تحميل المنشورات…", xf: "تعذّر عرض المنشورات هنا، فقد يقيّد X العرض المدمج. اضغط الزر أدناه لفتح الحساب مباشرة.",
-    tgT: "قنوات Telegram", tgPh: "اسم القناة، مثل cointelegraph", tgAdd: "إضافة", tgOpen: "فتح في Telegram", tgDel: "حذف القناة", tgErr: "تعذّر عرض هذه القناة، فقد تكون خاصة أو غير موجودة.", tgBad: "اسم قناة غير صالح.", subs: "مشترك", media: "📷 وسائط",
+    tgT: "قنوات Telegram", tgPh: "اسم القناة، مثل cointelegraph", tgAdd: "إضافة", tgOpen: "فتح في Telegram", tgDel: "حذف القناة", pf: "نبذة عن العملة", pRank: "الترتيب", pCap: "القيمة السوقية", pFdv: "القيمة المخففة بالكامل", pVol: "حجم التداول 24س", pCirc: "المعروض المتداول", pTot: "إجمالي المعروض", pMax: "الحد الأقصى", pAth: "أعلى سعر تاريخي", pAtl: "أدنى سعر تاريخي", pGen: "تاريخ الإطلاق", pPerf: "الأداء", pLinks: "روابط", pWeb: "الموقع الرسمي", pWp: "الورقة البيضاء", pExp: "مستكشف الشبكة", pMore: "اقرأ المزيد", pEn: "الوصف متوفر بالإنجليزية فقط", pSrc: "المصدر: CoinGecko", pNone: "غير محدود", tgErr: "تعذّر عرض هذه القناة، فقد تكون خاصة أو غير موجودة.", tgBad: "اسم قناة غير صالح.", subs: "مشترك", media: "📷 وسائط",
     sf: "مباريات اليوم", sfb: "⚽ فتح مباريات اليوم على Sofascore", sc: "النتائج المباشرة", all: "الكل", nos: "لا توجد مباريات في هذه الفترة.", ft: "انتهت",
     starHint: "اضغط ☆ لمتابعة مباراة: يصلك تنبيه عند بدايتها وعند كل هدف.",
     sports: "الاحتمالات", today: "اليوم", upc: "مباريات قادمة", nom: "لا توجد مباريات اليوم في هذه الدوريات.", upd: "آخر تحديث", rem: "الرصيد المتبقي", win: "احتمال فوز الفريق الأول",
@@ -70,7 +70,7 @@ const T = {
     tA: "Alertes actives", tN: "Infos du jour", tM: "Matchs du jour", tL: "En direct",
     news: "Actualités mondiales", nc: ["Tout", "Monde", "Économie", "Tech", "Crypto"],
     xo: "Ouvrir le compte sur X", xn: "X n’affiche plus les publications dans les sites pour les visiteurs. Touchez un compte pour l’ouvrir dans l’app X.", xl: "Chargement des posts…", xf: "Impossible d’afficher les posts ici : X limite parfois l’affichage intégré. Touchez le bouton ci-dessous pour ouvrir le compte.",
-    tgT: "Canaux Telegram", tgPh: "Nom du canal, ex. cointelegraph", tgAdd: "Ajouter", tgOpen: "Ouvrir dans Telegram", tgDel: "Supprimer le canal", tgErr: "Impossible d’afficher ce canal (privé ou inexistant).", tgBad: "Nom de canal invalide.", subs: "abonnés", media: "📷 média",
+    tgT: "Canaux Telegram", tgPh: "Nom du canal, ex. cointelegraph", tgAdd: "Ajouter", tgOpen: "Ouvrir dans Telegram", tgDel: "Supprimer le canal", pf: "Profil de la crypto", pRank: "Rang", pCap: "Capitalisation", pFdv: "Valorisation diluée", pVol: "Volume 24h", pCirc: "Offre en circulation", pTot: "Offre totale", pMax: "Offre maximale", pAth: "Plus haut historique", pAtl: "Plus bas historique", pGen: "Lancement", pPerf: "Performance", pLinks: "Liens", pWeb: "Site officiel", pWp: "Livre blanc", pExp: "Explorateur", pMore: "Lire la suite", pEn: "Description disponible en anglais uniquement", pSrc: "Source : CoinGecko", pNone: "Illimitée", tgErr: "Impossible d’afficher ce canal (privé ou inexistant).", tgBad: "Nom de canal invalide.", subs: "abonnés", media: "📷 média",
     sf: "Matchs du jour", sfb: "⚽ Ouvrir les matchs du jour sur Sofascore", sc: "Scores en direct", all: "Tout", nos: "Aucun match sur cette période.", ft: "Terminé",
     starHint: "Touchez ☆ pour suivre un match : alerte au coup d’envoi et à chaque but.",
     sports: "Cotes", today: "Aujourd’hui", upc: "À venir", nom: "Aucun match aujourd’hui dans ces compétitions.", upd: "Mis à jour", rem: "Crédits restants", win: "Probabilité de victoire de l’équipe 1",
@@ -98,7 +98,7 @@ const T = {
     tA: "Active alerts", tN: "News today", tM: "Matches today", tL: "Live now",
     news: "World news", nc: ["All", "World", "Economy", "Tech", "Crypto"],
     xo: "Open account on X", xn: "X no longer shows posts inside websites to visitors. Tap an account to open it in the X app.", xl: "Loading posts…", xf: "Could not show posts here: X sometimes restricts embeds. Tap the button below to open the account.",
-    tgT: "Telegram channels", tgPh: "Channel name, e.g. cointelegraph", tgAdd: "Add", tgOpen: "Open in Telegram", tgDel: "Remove channel", tgErr: "Could not show this channel (private or missing).", tgBad: "Invalid channel name.", subs: "subscribers", media: "📷 media",
+    tgT: "Telegram channels", tgPh: "Channel name, e.g. cointelegraph", tgAdd: "Add", tgOpen: "Open in Telegram", tgDel: "Remove channel", pf: "Coin profile", pRank: "Rank", pCap: "Market cap", pFdv: "Fully diluted value", pVol: "24h volume", pCirc: "Circulating supply", pTot: "Total supply", pMax: "Max supply", pAth: "All-time high", pAtl: "All-time low", pGen: "Launched", pPerf: "Performance", pLinks: "Links", pWeb: "Website", pWp: "Whitepaper", pExp: "Explorer", pMore: "Read more", pEn: "Description available in English only", pSrc: "Source: CoinGecko", pNone: "Unlimited", tgErr: "Could not show this channel (private or missing).", tgBad: "Invalid channel name.", subs: "subscribers", media: "📷 media",
     sf: "Today’s matches", sfb: "⚽ Open today’s matches on Sofascore", sc: "Live scores", all: "All", nos: "No matches in this period.", ft: "FT",
     starHint: "Tap ☆ to follow a match: get alerted at kick-off and on every goal.",
     sports: "Odds", today: "Today", upc: "Upcoming", nom: "No matches today in these competitions.", upd: "Updated", rem: "Credits left", win: "Team 1 win probability",
@@ -167,6 +167,7 @@ const CL = {};          // coin -> {p, c, h, l, v, s, d}
 let CLT = 0, CLlive = false;
 const KL = {};          // "BTC:1D" -> closes
 let FNG = load("fng");
+let PF = load("pf") || {}; // coin profiles: "BTC:ar" -> { t, d }
 let NW = null, NWL = "", NWT = 0;
 let SP = null, SPM = {}, SPT = 0;      // odds
 let SC = load("scores"), SCT = 0;      // live scores
@@ -298,7 +299,33 @@ function vMkt(t) {
     const d = CL[k] || {};
     return '<button class="row' + (k === sel ? " sel" : "") + '" data-coin="' + k + '"><div class="av">' + k.slice(0, 4) + '</div><div class="grow"><b>' + n + "</b>" + (d.c != null ? cv(d.c) : '<span class="mut">' + k + "</span>") + "</div>" + chart(d.s, 32) + '<b style="direction:ltr;min-width:84px;text-align:end">' + (d.p ? usd(d.p) : "–") + "</b></button>";
   }).join("") + "</div>";
-  return top + list;
+  return top + vProfile(t) + list;
+}
+function vProfile(t) {
+  const c = PF[sel + ":" + L], d = c && c.d;
+  if (!d || d.err) return '<div class="card">' + hd("btc", t.pf, null, t) + '<div class="empty">' + (d && d.err ? t.err : t.loading) + "</div></div>";
+  const num = v => v == null ? "–" : ltr(Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 }).format(v));
+  const money = v => v == null ? "–" : ltr(v >= 1e6 ? compact(v) : usd(v));
+  const day = s => s ? new Date(s).toLocaleDateString(LC(), { day: "numeric", month: "short", year: "numeric" }) : "";
+  const pc = v => v == null ? "–" : cv(v);
+  const cell = (k, v, sub) => '<div><small>' + k + "</small>" + v + (sub ? '<span class="mut" style="display:block;font:500 10px Inter,sans-serif">' + sub + "</span>" : "") + "</div>";
+  const lk = d.links || {}, links = [[t.pWeb, lk.web], [t.pWp, lk.whitepaper], [t.pExp, lk.explorer], ["X", lk.x], ["Reddit", lk.reddit], ["GitHub", lk.github]]
+    .filter(x => x[1] && /^https?:\/\//.test(x[1]));
+  let h = '<div class="card pf"><div class="pfh">' + (d.image && /^https:\/\//.test(d.image) ? '<img src="' + esc(d.image) + '" alt="" width="44" height="44" loading="lazy" onerror="this.remove()">' : '<div class="av">' + esc(sel) + "</div>")
+    + '<div class="grow"><b>' + esc(d.name) + ' <span class="mut">' + esc(d.sym) + "</span></b>"
+    + (d.rank ? '<span class="chip">' + t.pRank + " " + ltr("#" + d.rank) + "</span>" : "") + (d.categories || []).slice(0, 2).map(x => '<span class="chip">' + esc(x) + "</span>").join("") + "</div></div>";
+  h += '<div class="pfg">' + cell(t.pCap, money(d.marketCap)) + cell(t.pVol, money(d.volume)) + cell(t.pFdv, money(d.fdv))
+    + cell(t.pCirc, num(d.circulating)) + cell(t.pMax, d.max ? num(d.max) : t.pNone, d.total ? t.pTot + " " + num(d.total) : "")
+    + cell(t.pAth, money(d.ath), day(d.athDate) + (d.athChange != null ? " · " + ltr(pctS(d.athChange)) : ""))
+    + cell(t.pAtl, money(d.atl), day(d.atlDate)) + (d.genesis ? cell(t.pGen, day(d.genesis)) : "") + "</div>";
+  h += '<div class="h" style="margin:14px 0 8px">' + t.pPerf + '</div><div class="st" style="margin-top:0"><div><small>7D</small>' + pc(d.ch7d) + "</div><div><small>30D</small>" + pc(d.ch30d) + "</div><div><small>1Y</small>" + pc(d.ch1y) + "</div></div>";
+  if (d.desc) {
+    const paras = d.desc.split(/\n+/).filter(Boolean);
+    h += '<div class="pfd">' + (d.descLang !== L ? '<div class="mut" style="margin-bottom:4px">' + t.pEn + "</div>" : "")
+      + '<p dir="auto">' + esc(paras[0]) + "</p>" + (paras.length > 1 ? "<details><summary>" + t.pMore + "</summary>" + paras.slice(1).map(x => '<p dir="auto">' + esc(x) + "</p>").join("") + "</details>" : "") + "</div>";
+  }
+  if (links.length) h += '<div class="h" style="margin:14px 0 8px">' + t.pLinks + '</div><div class="chips" style="flex-wrap:wrap">' + links.map(x => '<a class="chipl" target="_blank" rel="noopener" href="' + esc(x[1]) + '">' + esc(x[0]) + " ↗</a>").join("") + "</div>";
+  return h + '<div class="mut" style="margin-top:6px;font-size:11px">' + t.pSrc + "</div></div>";
 }
 function vNews(t) {
   if (!NW) return '<div class="card">' + hd("news", t.news, null, t) + '<div class="empty">' + (navigator.onLine ? t.loading : t.err) + "</div></div>";
@@ -487,7 +514,7 @@ function go(id) {
   if (id === "sport") { loadSports(); loadScores(true); }
   if (id === "news") loadNews();
   if (id === "tg") loadTg(tgcur);
-  if (id === "mkt") mountChart();
+  if (id === "mkt") { mountChart(); loadProfile(); }
   if (id === "rep") loadAi();
 }
 
@@ -496,12 +523,12 @@ document.addEventListener("focusout", () => setTimeout(() => { if (pending && !t
 document.addEventListener("click", e => {
   const g = s => e.target.closest(s); let b;
   const t = T[L];
-  if ((b = g("#lg button"))) { L = b.dataset.l; save("lang", L); render(); loadNews(true); loadAi(); }
+  if ((b = g("#lg button"))) { L = b.dataset.l; save("lang", L); render(); loadNews(true); loadAi(); if (cur === "mkt") loadProfile(); }
   else if ((b = g("nav button"))) go(b.dataset.s);
   else if ((b = g("[data-go]"))) go(b.dataset.go);
   else if ((b = g("[data-nc]"))) { ncat = b.dataset.nc; render(); }
   else if ((b = g("[data-ci]"))) { cint = b.dataset.ci; save("cint", cint); render(); loadCandles(); }
-  else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadCandles(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  else if ((b = g("[data-coin]"))) { sel = b.dataset.coin; render(); loadCandles(); loadProfile(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   else if ((b = g("[data-sc]"))) { scat = b.dataset.sc; render(); }
   else if ((b = g("[data-star]"))) {
     const id = b.dataset.star, m = SC && SC.matches.find(x => x.id === id);
@@ -732,6 +759,16 @@ function tickCandle() {
   const c = CK[CH.key]; if (c) c.bars[c.bars.length - 1] = nb;
   legend(nb);
   if (c && Date.now() - c.t > MIN) loadCandles(true);
+}
+async function loadProfile() {
+  const k = sel, lg = L, key = k + ":" + lg, c = PF[key];
+  if (c && c.d && !c.d.err && Date.now() - c.t < 6 * 60 * MIN) return;
+  const d = await jget(WORKER + "/coin?sym=" + k + "&lang=" + lg, 15000);
+  if (d && d.name) PF[key] = { t: Date.now(), d };
+  else if (!c || !c.d || c.d.err) PF[key] = { t: Date.now(), d: { err: true } };
+  else return;
+  const keep = {}; for (const x in PF) if (PF[x].d && !PF[x].d.err) keep[x] = PF[x]; save("pf", keep);
+  render();
 }
 async function loadAi() {
   const lg = L, a = AI[lg];
