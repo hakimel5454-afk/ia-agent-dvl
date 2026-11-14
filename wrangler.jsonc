@@ -5,5 +5,7 @@
   // needed by the Anthropic SDK (/report)
   "compatibility_flags": ["nodejs_compat"],
   // required by `wrangler preview` (Cloudflare preview builds for non-main branches)
-  "previews": {}
+  "previews": {},
+  // Workers AI (free daily allowance) for /analyze when no ANTHROPIC_API_KEY is set
+  "ai": { "binding": "AI" }
 }

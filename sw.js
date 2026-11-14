@@ -1,5 +1,5 @@
 // Offline support: the app shell is cached; live data is cached by the app itself (localStorage).
-const CACHE = "dvl-v11";
+const CACHE = "dvl-v12";
 const SHELL = ["./", "index.html", "style.css", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
