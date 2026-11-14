@@ -6,6 +6,8 @@
 //   /fng                  crypto Fear & Greed index (cached 30 min)
 //   /tg?ch=<channel>      latest posts of a public Telegram channel (cached 5 min)
 //   /coin?sym=BTC&lang=ar  coin profile from CoinGecko (cached 6 h)
+//   /analyze?home=..&away=..&lang=ar  AI analysis of one match from the app's own data
+//                         (Workers AI, free; Claude when ANTHROPIC_API_KEY is set; cached)
 //   /report?lang=ar|fr|en daily report written by Claude from the live data (needs ANTHROPIC_API_KEY, cached 3 h)
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -152,6 +154,7 @@ function parseEspn(j, code) {
     const a = (c.competitors || []).find(x => x.homeAway === "away");
     if (!h || !a) continue;
     const st = (c.status || e.status || {}).type || {};
+    const rec = x => (x.records && x.records[0] && x.records[0].summary) || null;
     out.push({
       id: String(e.id),
       league: ESPN[code] || code,
@@ -161,7 +164,8 @@ function parseEspn(j, code) {
       as: a.score != null ? String(a.score) : "",
       state: st.state || "pre",             // pre | in | post
       detail: st.shortDetail || st.detail || "",
-      time: e.date
+      time: e.date,
+      hf: h.form || null, af: a.form || null, hr: rec(h), ar: rec(a)
     });
   }
   return out;
@@ -388,6 +392,111 @@ async function report(lang, env) {
   }
 }
 
+// ---------- /analyze (AI match analysis) ----------
+const AN_SCHEMA = {
+  type: "object",
+  properties: {
+    summary: { type: "string", description: "2-3 sentences: how the match looks from the data." },
+    factors: { type: "array", items: { type: "string" }, description: "3-5 short points drawn from the data." },
+    lean: { type: "string", enum: ["home", "draw", "away", "none"], description: "Most likely outcome according to the data, or none if too close." },
+    confidence: { type: "string", enum: ["low", "medium", "high"] },
+    watch: { type: "string", description: "One thing to watch in this match." }
+  },
+  required: ["summary", "factors", "lean", "confidence", "watch"],
+  additionalProperties: false
+};
+const AN_SYSTEM = "You are the football analyst of IA AGENT DVL, a personal dashboard. Analyse one match using ONLY the JSON data given: " +
+  "bookmaker odds (and the implied probabilities computed from them), live score and status, recent form strings (W/D/L, most recent last) and season records when present. " +
+  "Never invent injuries, line-ups, head-to-head results, statistics or news that are not in the data; if the data is thin, say so and lower the confidence. " +
+  "This is information, not betting advice: never suggest stakes, bets or that a bet is a good idea. " +
+  "Answer with a single JSON object with keys summary, factors (array of strings), lean (home|draw|away|none), confidence (low|medium|high), watch.";
+let anCount = { h: 0, n: 0 }; // per-isolate guard for the free AI quota
+function norm(s) {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b(fc|cf|sc|afc|ac|club|al|el|de|the)\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+}
+function sameTeam(a, b) { a = norm(a); b = norm(b); return !!a && !!b && (a === b || a.includes(b) || b.includes(a)); }
+function parseJsonLoose(x) {
+  if (x && typeof x === "object") return x;
+  const m = String(x || "").match(/\{[\s\S]*\}/);
+  return m ? JSON.parse(m[0]) : null;
+}
+async function analyze(home, away, lang, env) {
+  const [sc, od] = await Promise.all([
+    scores().then(JSON.parse).catch(() => null),
+    matches(env).then(r => JSON.parse(r.body)).catch(() => null)
+  ]);
+  const m = ((sc && sc.matches) || []).find(x => sameTeam(x.home, home) && sameTeam(x.away, away));
+  const o = ((od && od.matches) || []).find(x => sameTeam(x.home, home) && sameTeam(x.away, away));
+  if (!m && !o) return { status: 404, body: JSON.stringify({ error: "match not found" }) };
+  const live = m && m.state === "in";
+  const key = "an:" + norm(home) + "|" + norm(away) + ":" + lang + ":" + (m ? m.state + (m.state === "pre" ? "" : m.hs + "-" + m.as) : "odds");
+  const c = cached(key, live ? 10 * MIN : 3 * 60 * MIN);
+  if (c) return { body: c };
+  let implied = null;
+  if (o && o.odds && o.odds["1"] && o.odds.X && o.odds["2"]) {
+    const s = 1 / o.odds["1"] + 1 / o.odds.X + 1 / o.odds["2"], pc = v => Math.round(100 / v / s);
+    implied = { home: pc(o.odds["1"]), draw: pc(o.odds.X), away: pc(o.odds["2"]) };
+  }
+  const data = {
+    league: (m || o).league, home: (m || o).home, away: (m || o).away, kickoff_utc: (m || o).time,
+    status: m ? (m.state === "pre" ? "not started" : m.state === "in" ? "live " + m.detail : "finished") : "not started",
+    score: m && m.state !== "pre" ? m.hs + "-" + m.as : null,
+    home_form: m && m.hf, away_form: m && m.af, home_record: m && m.hr, away_record: m && m.ar,
+    decimal_odds_1X2: o ? o.odds : null, bookmaker: o ? o.book : null, implied_probability_pct: implied
+  };
+  const hour = Math.floor(Date.now() / 3600000);
+  if (anCount.h !== hour) anCount = { h: hour, n: 0 };
+  if (++anCount.n > 40) return { status: 429, body: JSON.stringify({ error: "too many analyses this hour" }) };
+  const user = "Write the analysis in " + LANG_NAME[lang] + ". Match data:\n" + JSON.stringify(data);
+  let a, model;
+  try {
+    if (env.ANTHROPIC_API_KEY) {
+      const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+      const r = await client.beta.messages.create({
+        model: "claude-opus-5-5", max_tokens: 16000,
+        output_config: { effort: "low", format: { type: "json_schema", schema: AN_SCHEMA } },
+        betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+        system: AN_SYSTEM, messages: [{ role: "user", content: user }]
+      });
+      if (r.stop_reason === "refusal") throw new Error("refused");
+      a = parseJsonLoose(r.content.filter(b => b.type === "text").map(b => b.text).join(""));
+      model = "Claude";
+    } else if (env.AI) {
+      const r = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+        messages: [{ role: "system", content: AN_SYSTEM }, { role: "user", content: user }],
+        max_tokens: 900, temperature: 0.3,
+        response_format: { type: "json_schema", json_schema: AN_SCHEMA }
+      });
+      a = parseJsonLoose(r && r.response);
+      model = "Llama 3.3 (Workers AI)";
+    } else {
+      return { status: 501, body: JSON.stringify({ error: "no AI configured" }) };
+    }
+  } catch (e) {
+    anCount.n--;
+    let error = "analysis failed";
+    if (e instanceof Anthropic.AuthenticationError) error = "invalid ANTHROPIC_API_KEY";
+    else if (e instanceof Anthropic.RateLimitError) error = "rate limited";
+    else if (e instanceof Anthropic.APIError) error = "Claude API error " + e.status;
+    else if (e && e.message) error = "analysis failed: " + String(e.message).slice(0, 120);
+    return { status: 502, body: JSON.stringify({ error }) };
+  }
+  if (!a || typeof a.summary !== "string") return { status: 502, body: JSON.stringify({ error: "bad analysis format" }) };
+  const out = {
+    match: { league: data.league, home: data.home, away: data.away, time: data.kickoff_utc, status: data.status, score: data.score },
+    implied, odds: data.decimal_odds_1X2, form: { home: data.home_form, away: data.away_form },
+    analysis: {
+      summary: a.summary, factors: (Array.isArray(a.factors) ? a.factors : []).map(String).slice(0, 5),
+      lean: ["home", "draw", "away", "none"].includes(a.lean) ? a.lean : "none",
+      confidence: ["low", "medium", "high"].includes(a.confidence) ? a.confidence : "low",
+      watch: typeof a.watch === "string" ? a.watch : ""
+    },
+    model, lang, generated: new Date().toISOString()
+  };
+  return { body: store(key, JSON.stringify(out)) };
+}
+
 // ---------- router ----------
 export default {
   async fetch(req, env) {
@@ -424,13 +533,19 @@ export default {
           if (!/^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(ch)) return reply(JSON.stringify({ error: "bad channel" }), 400);
           return reply(await tg(ch));
         }
+        case "/analyze": {
+          const home = (u.searchParams.get("home") || "").slice(0, 80), away = (u.searchParams.get("away") || "").slice(0, 80), q = u.searchParams.get("lang");
+          if (!home || !away) return reply(JSON.stringify({ error: "home and away required" }), 400);
+          const r = await analyze(home, away, ["ar", "fr", "en"].includes(q) ? q : "en", env);
+          return reply(r.body, r.status || 200);
+        }
         case "/report": {
           const q = u.searchParams.get("lang");
           const r = await report(["ar", "fr", "en"].includes(q) ? q : "en", env);
           return reply(r.body, r.status || 200);
         }
         default:
-          return reply(JSON.stringify({ ok: true, name: "IA AGENT DVL", routes: ["/news", "/matches", "/scores", "/fng", "/tg", "/coin", "/report"] }));
+          return reply(JSON.stringify({ ok: true, name: "IA AGENT DVL", routes: ["/news", "/matches", "/scores", "/fng", "/tg", "/coin", "/analyze", "/report"] }));
       }
     } catch (e) {
       return reply(JSON.stringify({ error: "fetch failed" }), 502);
